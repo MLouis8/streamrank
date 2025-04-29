@@ -33,12 +33,14 @@
 *.app
 
 ### CMake ###
-CMakeLists.txt.user
-CMakeCache.txt
-CMakeFiles
-CMakeScripts
+simulation/CMakeLists.txt.user
+simulation/CMakeLists.txt
+simulation/CMakePresets.json
+simulation/CMakeCache.txt
+simulation/CMakeFiles
+simulation/CMakeScripts
 Testing
-Makefile
+simulation/Makefile
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json

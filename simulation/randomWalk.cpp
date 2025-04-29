@@ -1,7 +1,7 @@
 #include "include/randomWalk.hpp"
 #include "include/walker.hpp"
 
-std::vector<std::vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps, float alpha, Network net)
+std::vector<std::vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float alpha, Network net)
 {
     int startingPosition = net.getRdLocation();
     std::vector<std::vector<int>> walkersPositions(nbWalkers, {startingPosition});

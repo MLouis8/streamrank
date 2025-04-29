@@ -1,11 +1,11 @@
 #include "include/randomWalk.hpp"
 #include "include/walker.hpp"
 
-int main() {
+int main()
+{
     int nbVertices = 10000;
     int nbWalkers = 20;
-    float probaEdge  = 0.5;
-    float T;
+    float probaEdge = 0.5;
 
     int nbSteps = 10;
     float eps = 0.0001;
