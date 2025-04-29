@@ -1,6 +1,8 @@
-#include "walker.hpp"
+#ifndef RANDOMWALK_HPP
+#define RANDOMWALK_HPP
 
+#include "network.hpp"
 
-vector<> simulatePRRW
+std::vector<std::vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps, float alpha, Network net);
 
-vector<> simulateADTRW(size_t n, size_t k, float eps, );
+#endif // RANDOMWALK_HPP

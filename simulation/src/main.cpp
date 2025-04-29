@@ -1,19 +1,18 @@
+#include "include/randomWalk.hpp"
+#include "include/walker.hpp"
+
 int main() {
-    size_t nbVertices;
-    size_t nbWalkers;
-    float probaEdge;
+    int nbVertices = 10000;
+    int nbWalkers = 20;
+    float probaEdge  = 0.5;
     float T;
 
-    size_t nbSteps;
-    float epsilon;
+    int nbSteps = 10;
+    float eps = 0.0001;
+    float alpha = 0.85;
 
-    Graph G = generateRDGraph(nbVertices, probaEdge);
-    StreamGraph S = generateRDStreamGraph(nbVertices, probaEdge, T);
+    Network net = randomErdosRenyiNetwork(nbVertices, probaEdge);
 
-    vector<> res;
-    res = simulatePRRW(nbWalkers, nbSteps, G);
-    res = simulateCTRW(nbWalkers, nbSteps, S);
-    res = simulateDTRW(nbWalkers, nbSteps, );
-    res = simulateADTRW(nbWalkers, nbSteps);
+    std::vector<std::vector<int>> res = randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net);
     return 0;
 }
