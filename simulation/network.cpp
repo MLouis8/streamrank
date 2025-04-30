@@ -26,7 +26,7 @@ int Network::getRdLocation()
     return dis(gen);
 }
 
-Network &randomErdosRenyiNetwork(int n, float p)
+Network randomErdosRenyiNetwork(int n, float p)
 {
     std::vector<int> xadjacency;
     std::vector<float> adjacencyWeight;
@@ -67,6 +67,5 @@ Network &randomErdosRenyiNetwork(int n, float p)
         }
         xadjacency[i + 1] = xadjacency[i] + x;
     }
-    static Network res = Network(xadjacency, adjacencyWeight, adjacency);
-    return res;
+    return Network(xadjacency, adjacency, adjacencyWeight);
 }
