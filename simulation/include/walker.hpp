@@ -2,6 +2,7 @@
 #define WALKER_HPP
 
 #include "network.hpp"
+#include "temporalNetwork.hpp"
 
 template <typename Location> class Walker {
 public:
@@ -9,7 +10,10 @@ public:
     int getId() const { return _id; }
     Location getLoc() { return _pos; }
     Location step(Network& net, float alpha);
-
+    Location discreteStep(tempoNetwork& tnet, float alpha);
+    Location discreteApproxStep(tempoNetwork& tnet, float alpha);
+    Location continuousStep(tempoNetwork& tnet, float alpha);
+    
 private:
     int _id;
     Location _pos;

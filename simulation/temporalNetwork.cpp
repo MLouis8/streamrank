@@ -6,13 +6,15 @@
 #include <vector>
 
 void tempoNetwork::initTimeEvents() {
-    std::vector<float> events;
+    std::vector<Event> events;
     for (auto intervals: _W)
     {
         for (auto interval: intervals)
         {
-            events.push_back(interval.first);
-            events.push_back(interval.second);
+            Event first = Event(interval.first);
+            if (events.back() != first)
+                events.push_back(first);
+            events.push_back(Event(interval.second));
         }
     }
     for (const auto& pair: _E)
@@ -20,17 +22,20 @@ void tempoNetwork::initTimeEvents() {
         events.push_back(pair.second[0].first);
         for (auto interval: pair.second)
         {
-            events.push_back(interval.second);
+            Event first = Event(interval.first);
+            if (events.back() != first)
+                events.push_back(first);
+            events.push_back(Event(interval.second));
         }
     }
-    std::sort(events.begin(), events.end());
+    std::sort(events.begin(), events.end()); // check how to sort for Event
     std::vector<std::vector<int>> nodeEvents;
     nodeEvents.assign(events.size(), {});
     for (auto intervals: _W)
     {
         int i = 0;
         for (int j=0; j < events.size(); j++) {
-
+            
         }
     }
     std::vector<std::vector<std::pair<int, int>>> edgeEvents;

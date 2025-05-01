@@ -15,6 +15,11 @@ public:
   bool operator==(const Event& other) const {
     return std::fabs(_val - other._val) < _eps;
   }
+
+  bool operator!=(const Event& other) const {
+    return std::fabs(_val - other._val) >= _eps;
+  }
+
 private:
   float _val;
   float _eps;
