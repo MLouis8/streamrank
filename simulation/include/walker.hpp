@@ -2,6 +2,7 @@
 #define WALKER_HPP
 
 #include "network.hpp"
+
 template <typename Location> class Walker {
 public:
     Walker(int id, Location startingPos) { _id = id; _pos=startingPos; }
