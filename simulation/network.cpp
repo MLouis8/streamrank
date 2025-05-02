@@ -1,71 +1,75 @@
 #include "include/network.hpp"
-#include <random>
+#include <iostream>
 #include <map>
+#include <ostream>
+#include <random>
 
-std::vector<int> Network::getNeighbours(int u)
-{
-    std::vector<int> neighbours;
-    for (int i = _xadjacency[u]; i < _xadjacency[u + 1]; i++)
-        neighbours.push_back(_adjacency[i]);
-    return neighbours;
+std::vector<int> Network::getNeighbours(int u) {
+  std::vector<int> neighbours;
+  for (int i = _xadjacency[u]; i < _xadjacency[u + 1]; i++)
+    neighbours.push_back(_adjacency[i]);
+  return neighbours;
 }
 
-std::vector<float> Network::getNeighboursWeights(int u)
-{
-    std::vector<float> weights;
-    for (int i = _xadjacency[u]; i < _xadjacency[u + 1]; i++)
-        weights.push_back(_adjacencyWeight[i]);
-    return weights;
+std::vector<float> Network::getNeighboursWeights(int u) {
+  std::vector<float> weights;
+  for (int i = _xadjacency[u]; i < _xadjacency[u + 1]; i++)
+    weights.push_back(_adjacencyWeight[i]);
+  return weights;
 }
 
-int Network::getRdLocation()
-{
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(1, _n);
-    return dis(gen);
+int Network::getRdLocation() {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(1, _n);
+  return dis(gen);
 }
 
-Network randomErdosRenyiNetwork(int n, float p)
-{
-    std::vector<int> xadjacency;
-    std::vector<float> adjacencyWeight;
-    std::vector<int> adjacency;
+void Network::display() {
+  std::cout << "Cumulative nb of neighbour per node:";
+  for (auto a : _adjacency) {
+    std::cout << a;
+  }
+  std::cout << std::endl << "Ordered list of neighbours:";
+  for (auto x : _xadjacency) {
+    std::cout << x;
+  }
+  std::cout << std::endl << "Weight of the above edges:";
+  for (auto w : _adjacencyWeight) {
+    std::cout << w;
+  }
+}
 
-    xadjacency.assign(n + 1, 0);
+Network randomErdosRenyiNetwork(int n, float p) {
+  std::vector<int> xadjacency;
+  std::vector<float> adjacencyWeight;
+  std::vector<int> adjacency;
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0.0, 1.0);
+  xadjacency.assign(n + 1, 0);
 
-    std::map<std::pair<int, int>, bool> notSet;
-    for (int i = 0; i < n; i++)
-    {
-        int x = 0;
-        for (int j = 0; j < n && i != j; j++)
-        {
-            if (i < j)
-            {
-                if (dis(gen) <= p)
-                {
-                    adjacency.push_back(j);
-                    notSet[{i, j}] = true;
-                    x++;
-                }
-                else
-                {
-                    notSet[{i, j}] = false;
-                }
-            }
-            else
-            {
-                if (notSet[{j, i}])
-                {
-                    adjacency.push_back(j);
-                }
-            }
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> dis(0.0, 1.0);
+
+  std::map<std::pair<int, int>, bool> notSet;
+  for (int i = 0; i < n; i++) {
+    int x = 0;
+    for (int j = 0; j < n && i != j; j++) {
+      if (i < j) {
+        if (dis(gen) <= p) {
+          adjacency.push_back(j);
+          notSet[{i, j}] = true;
+          x++;
+        } else {
+          notSet[{i, j}] = false;
         }
-        xadjacency[i + 1] = xadjacency[i] + x;
+      } else {
+        if (notSet[{j, i}]) {
+          adjacency.push_back(j);
+        }
+      }
     }
-    return Network(xadjacency, adjacency, adjacencyWeight);
+    xadjacency[i + 1] = xadjacency[i] + x;
+  }
+  return Network(xadjacency, adjacency, adjacencyWeight);
 }
