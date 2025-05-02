@@ -12,11 +12,13 @@ public:
   std::vector<float> getAdjacencyWeight() { return _adjacencyWeight; }
   std::vector<int> getAdjacency() { return _adjacency; }
   int getSize() { return _n; }
+  int getNbEdges() { return _adjacencyWeight.size(); }
 
   std::vector<int> getNeighbours(int u);
   std::vector<float> getNeighboursWeights(int u);
   int getRdLocation();
   void display();
+  void checkConsistency();
 
 private:
   int _n;

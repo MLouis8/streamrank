@@ -3,9 +3,9 @@
 #include <iostream>
 
 int main() {
-  int nbVertices = 20;
+  int nbVertices = 5;
   int nbWalkers = 1;
-  float probaEdge = 0.6;
+  float probaEdge = 0.5;
 
   int nbSteps = 30;
   float eps = 0.0001;
@@ -25,14 +25,7 @@ int main() {
   Network net = randomErdosRenyiNetwork(nbVertices, probaEdge);
 
   net.display();
-
-  // for (int i=0 ; i < 10; i++) {
-  //     std::vector<int> n = net.getNeighbours(i);
-  //     std::cout << n.size();
-  //     for (auto neigh : n)
-  //         std::cout << neigh;
-  //     std::cout << std::endl;
-  // }
+  net.checkConsistency();
 
   // std::vector<std::vector<int>> res = randomWalkSimulation(nbWalkers,
   // nbSteps, eps, alpha, net0);
