@@ -13,7 +13,7 @@ typedef std::vector<std::pair<float, float>> TIntervals;
 class tempoNetwork {
 public:
   tempoNetwork(float tStart, float tEnd, int n, std::vector<TIntervals> W,
-               std::unordered_map<std::pair<int, int>, TIntervals> E)
+               std::unordered_map<std::string, TIntervals> E)
       : _tStart(tStart), _tEnd(tEnd), _n(n), _W(W), _E(E),
         _timeAspectSet(false) {}
   float getStartingT() { return _tStart; }
@@ -42,7 +42,7 @@ private:
   float _tEnd;
   int _n;
   std::vector<TIntervals> _W;
-  std::unordered_map<std::pair<int, int>, TIntervals> _E;
+  std::unordered_map<std::string, TIntervals> _E;
 
   bool _timeAspectSet;
   std::vector<Event> _events;
@@ -62,5 +62,9 @@ public:
 bool timeValid(TIntervals, float t);
 tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd, float p1,
                                 float p2, float p3);
+
+std::pair<int, int> strToPair(std::string key);
+
+std::string pairToStr(std::pair<int, int> pair);
 
 #endif // TEMPORALNETWORK_HPP

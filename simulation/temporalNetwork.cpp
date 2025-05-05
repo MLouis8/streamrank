@@ -2,18 +2,18 @@
 #include <algorithm>
 #include <cmath>
 #include <random>
-#include <stdexcept>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 TIntervals tempoNetwork::getTIntervals(int u, int v) {
-  auto it = _E.find({u, v});
+  auto it = _E.find(pairToStr({u, v}));
   if (it != _E.end()) {
     return it->second;
   } else {
-    return _E[{v, u}];
+    return _E[pairToStr({v, u})];
   }
 }
 
@@ -60,7 +60,7 @@ void tempoNetwork::initTimeEvents() {
       while (events[t] < interval.first)
         t++;
       while (events[t + 1] <= interval.second) {
-        edgeEvents[t].push_back(it.first);
+        edgeEvents[t].push_back(strToPair(it.first));
         t++;
       }
     }
@@ -197,14 +197,29 @@ tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd, float p1,
         fillIntervals(tEnd, tStart, p2, gen, normalDis, dis);
     W.push_back(currentIntervals);
   }
-  std::unordered_map<std::pair<int, int>, TIntervals> E;
+  std::unordered_map<std::string, TIntervals> E;
   // using p3 to determine the presence of an edge
   for (auto uv : edges) {
     TIntervals currentIntervals =
         fillIntervals(tEnd, tStart, p3, gen, normalDis, dis);
-    E[uv] = currentIntervals;
+    E[pairToStr(uv)] = currentIntervals;
   }
   tempoNetwork net = tempoNetwork(tStart, tEnd, n, W, E);
   net.initTimeEvents();
   return net;
+}
+
+std::pair<int, int> strToPair(const std::string &key) {
+  std::istringstream iss(key);
+  std::pair<int, int> pair;
+  std::string token;
+  std::getline(iss, token, ';');
+  pair.first = std::stoi(token);
+  std::getline(iss, token, ';');
+  pair.second = std::stoi(token);
+  return pair;
+}
+
+std::string pairToStr(std::pair<int, int> pair) {
+  return std::to_string(pair.first) + ";" + std::to_string(pair.second);
 }
