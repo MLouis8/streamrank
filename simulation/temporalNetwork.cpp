@@ -1,10 +1,11 @@
 #include "include/temporalNetwork.hpp"
 #include <algorithm>
-#include <array>
 #include <cmath>
+#include <ctime>
 #include <random>
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -91,12 +92,12 @@ bool tempoNetwork::checkEdgePres(int u, int v, float t) {
   return timeValid(intervals, t);
 }
 
-std::vector<int> tempoNetwork::getInstantNeighbours(int u, float t) {
+std::vector<int> tempoNetwork::getInstantEventNeighbours(int u, int eventId) {
   if (not isTimeSet())
     throw missing_temporal_init(
         "must first initialise time events, see initTimeEvents().");
   std::vector<int> instantNeighbours;
-  for (auto edge : _edgeEvents[timeToEventId(t)]) {
+  for (auto edge : _edgeEvents[eventId]) {
     if (edge.first == u)
       instantNeighbours.push_back(edge.second);
     if (edge.second == u)
@@ -105,18 +106,30 @@ std::vector<int> tempoNetwork::getInstantNeighbours(int u, float t) {
   return instantNeighbours;
 }
 
-std::vector<std::array<int, 3>> tempoNetwork::getFutureNeighbours(int u,
-                                                                  float t) {
-  if (not isTimeSet())
-    throw missing_temporal_init(
-        "must first initialise time events, see initTimeEvents().");
+std::vector<int> tempoNetwork::getInstantNeighbours(int u, float t) {
+  return getInstantEventNeighbours(u, timeToEventId(t));
 }
 
-std::vector<std::array<int, 3>> tempoNetwork::getFutureNeighbours(int u,
-                                                                  int idEvent) {
+std::vector<std::tuple<int, int, int>>
+tempoNetwork::getFutureNeighbours(int u, int idEvent) {
   if (not isTimeSet())
     throw missing_temporal_init(
         "must first initialise time events, see initTimeEvents().");
+  int vanishId = getNodeVanishEventId(u, idEvent);
+  std::vector<std::tuple<int, int, int>> res;
+  for (int i = idEvent; i < vanishId; i++) {
+    for (int neighbour : getInstantEventNeighbours(u, i)) {
+      int prevSize = res.size();
+      for (int j = 0; j < prevSize; j++) {
+        if (std::get<0>(res[j]) == neighbour) {
+          std::get<2>(res[j]) = i + 1;
+        } else {
+          res.push_back(std::make_tuple(neighbour, i, i + 1));
+        }
+      }
+    }
+  }
+  return res;
 }
 
 int tempoNetwork::getNodeVanishEventId(int u, int k) {

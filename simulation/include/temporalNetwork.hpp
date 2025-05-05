@@ -44,14 +44,14 @@ public:
    */
   std::vector<int> getInstantNeighbours(int u, float t);
   /**
-   * Returns a vector of tuples of int, float, float containing [nodeId,
-   * appearance time, vanishing time]
+   * Returns the vector of node ids neighbours of u at the event time
+   * corresponding to t
    */
-  std::vector<std::tuple<int, float, float>> getFutureNeighbours(int u,
-                                                                 float t);
+  std::vector<int> getInstantEventNeighbours(int u, int eventId);
   /**
    * Returns a vector of tuples of int containing [nodeId, appearance event id,
-   * vanishing event id]
+   * vanishing event id] of the nodes linked to u in the time
+   * segment [t, t_+(u)]
    */
   std::vector<std::tuple<int, int, int>> getFutureNeighbours(int u,
                                                              int idEvent);
