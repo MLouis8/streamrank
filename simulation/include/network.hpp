@@ -16,7 +16,7 @@ public:
 
   std::vector<int> getNeighbours(int u);
   std::vector<float> getNeighboursWeights(int u);
-  int getRdLocation();
+  int getRdLocation(int u);
   void display();
   void checkConsistency();
 

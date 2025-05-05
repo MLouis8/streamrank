@@ -21,11 +21,14 @@ std::vector<float> Network::getNeighboursWeights(int u) {
   return weights;
 }
 
-int Network::getRdLocation() {
+int Network::getRdLocation(int u) {
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_int_distribution<> dis(1, _n);
-  return dis(gen);
+  std::uniform_int_distribution<> dis(0, _n - 1);
+  int dest = dis(gen);
+  while (dest == u)
+    dest = dis(gen);
+  return dest;
 }
 
 void Network::display() {

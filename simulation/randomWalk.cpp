@@ -9,7 +9,7 @@ std::vector<std::vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps,
   std::vector<std::vector<int>> walkersPositions;
   std::vector<Walker<int>> walkersList;
   for (int i = 0; i < nbWalkers; i++) {
-    int startingPosition = net.getRdLocation();
+    int startingPosition = net.getRdLocation(-1);
     walkersPositions.push_back({startingPosition});
     walkersList.push_back(Walker<int>(i, startingPosition));
   }

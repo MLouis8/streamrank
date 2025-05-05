@@ -4,8 +4,18 @@
 #include <random>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
+
+TIntervals tempoNetwork::getTIntervals(int u, int v) {
+  auto it = _E.find({u, v});
+  if (it != _E.end()) {
+    return it->second;
+  } else {
+    return _E[{v, u}];
+  }
+}
 
 void tempoNetwork::initTimeEvents() {
   std::vector<Event> events = {Event(_tStart)};
@@ -26,19 +36,34 @@ void tempoNetwork::initTimeEvents() {
       events.push_back(Event(interval.second));
     }
   }
-  std::sort(events.begin(), events.end()); // check how to sort for Event
+  std::sort(events.begin(), events.end(), eventComp);
   events.push_back(Event(_tEnd));
-  // remove duplicates
+  events.erase(unique(events.begin(), events.end()), events.end());
   std::vector<std::vector<int>> nodeEvents;
   nodeEvents.assign(events.size(), {});
-  for (auto intervals : _W) {
-    int i = 0;
-    for (int j = 0; j < events.size(); j++) {
+  for (int u = 0; u < _W.size(); u++) {
+    int t = 0;
+    for (auto interval : _W[u]) {
+      while (events[t].getVal() < interval.first)
+        t++;
+      while (events[t + 1].getVal() <= interval.second) {
+        nodeEvents[t].push_back(u);
+        t++;
+      }
     }
   }
   std::vector<std::vector<std::pair<int, int>>> edgeEvents;
   edgeEvents.assign(events.size(), {});
-  for (const auto &pair : _E) {
+  for (auto &it : _E) {
+    int t = 0;
+    for (auto interval : it.second) {
+      while (events[t] < interval.first)
+        t++;
+      while (events[t + 1] <= interval.second) {
+        edgeEvents[t].push_back(it.first);
+        t++;
+      }
+    }
   }
   _edgeEvents = edgeEvents;
   _nodeEvents = nodeEvents;
@@ -46,22 +71,22 @@ void tempoNetwork::initTimeEvents() {
   _timeAspectSet = true;
 }
 
-Event tempoNetwork::timeToEvent(float t) {
+int tempoNetwork::timeToEventId(float t) {
   Event tEvent = Event(t);
-  for (auto e: _events) {
-    if (tEvent < e)
-      return e;
+  int i = 0;
+  while (_events[i] <= tEvent) {
+    i++;
   }
-  throw std::invalid_argument("no Event corresponds to time " + std::to_string(t));
+  return i - 1;
 }
 
 bool tempoNetwork::checkNodePres(int u, float t) {
-  TIntervals intervals = getTInterval(u);
+  TIntervals intervals = getTIntervals(u);
   return timeValid(intervals, t);
 }
 
 bool tempoNetwork::checkEdgePres(int u, int v, float t) {
-  TIntervals intervals = getTInterval(u, v);
+  TIntervals intervals = getTIntervals(u, v);
   return timeValid(intervals, t);
 }
 
@@ -69,28 +94,46 @@ std::vector<int> tempoNetwork::getInstantNeighbours(int u, float t) {
   if (not isTimeSet())
     throw missing_temporal_init(
         "must first initialise time events, see initTimeEvents().");
-  int k = timeToEvent(t);
-  return _nodeEvents[k];
+  std::vector<int> instantNeighbours;
+  for (auto edge : _edgeEvents[timeToEventId(t)]) {
+    if (edge.first == u)
+      instantNeighbours.push_back(edge.second);
+    if (edge.second == u)
+      instantNeighbours.push_back(edge.first);
+  }
+  return instantNeighbours;
 }
 
 std::vector<int> tempoNetwork::getFutureNeighbours(int u, float t) {
-  // TODO
+  if (not isTimeSet())
+    throw missing_temporal_init(
+        "must first initialise time events, see initTimeEvents().");
+}
+
+int tempoNetwork::getNodeVanishEventId(int u, int k) {
+  if (not isTimeSet())
+    throw missing_temporal_init(
+        "must first initialise time events, see initTimeEvents().");
+  while (std::find(_nodeEvents[k].begin(), _nodeEvents[k].end(), u) !=
+         _nodeEvents[k].end())
+    k++;
+  return k;
 }
 
 float tempoNetwork::getNodeVanishT(int u, float t) {
-  // TODO
+  for (auto interval : _W[u]) {
+    if (interval.first <= t && interval.second > t)
+      return interval.second;
+  }
+  return t;
 }
 
 float tempoNetwork::getNodeAppearT(int u, float t) {
-  // TODO
-}
-
-float tempoNetwork::getEdgeVanishT(int u, int v, float t) {
-  // TODO
-}
-
-float tempoNetwork::getEdgeAppearT(int u, int v, float t) {
-  // TODO
+  for (auto interval : _W[u]) {
+    if (interval.first <= t && interval.second > t)
+      return interval.first;
+  }
+  return t;
 }
 
 bool timeValid(TIntervals intervals, float t) {
@@ -154,7 +197,7 @@ tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd, float p1,
         fillIntervals(tEnd, tStart, p2, gen, normalDis, dis);
     W.push_back(currentIntervals);
   }
-  std::map<std::pair<int, int>, TIntervals> E;
+  std::unordered_map<std::pair<int, int>, TIntervals> E;
   // using p3 to determine the presence of an edge
   for (auto uv : edges) {
     TIntervals currentIntervals =

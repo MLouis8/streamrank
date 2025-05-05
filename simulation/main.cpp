@@ -2,6 +2,7 @@
 #include "include/randomWalk.hpp"
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 int main(int argc, char *argv[]) {
   if (argc != 5)
@@ -28,15 +29,22 @@ int main(int argc, char *argv[]) {
   //   std::vector<int> adj1 = {2, 3, 1, 3, 1, 2};
   //   std::vector<float> adjWt1 = {1, 1, 1, 1, 1, 1};
 
+  // K5
+  std::vector<int> xadj2 = {0, 4, 8, 12, 16, 20};
+  std::vector<int> adj2 = {1, 2, 3, 4, 0, 2, 3, 4, 0, 1,
+                           3, 4, 0, 1, 2, 4, 0, 1, 2, 3};
+  std::vector<float> adjWt2 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                               1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
   Network net = randomErdosRenyiNetwork(nbVertices, probaEdge);
 
-  //   net.display();
-  //   net.checkConsistency();
+  // net.display();
+  // net.checkConsistency();
 
   std::vector<std::vector<int>> res =
       randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net);
 
-  //   displayResults(res, nbVertices);
+  displayResults(res, nbVertices);
   //   for (int w = 0; w < res.size(); w++) {
   //     std::cout << "Walker" << w << ": ";
   //     for (auto pos : res[w])
