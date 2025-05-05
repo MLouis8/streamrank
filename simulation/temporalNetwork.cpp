@@ -1,5 +1,6 @@
 #include "include/temporalNetwork.hpp"
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <random>
 #include <sstream>
@@ -104,7 +105,15 @@ std::vector<int> tempoNetwork::getInstantNeighbours(int u, float t) {
   return instantNeighbours;
 }
 
-std::vector<int> tempoNetwork::getFutureNeighbours(int u, float t) {
+std::vector<std::array<int, 3>> tempoNetwork::getFutureNeighbours(int u,
+                                                                  float t) {
+  if (not isTimeSet())
+    throw missing_temporal_init(
+        "must first initialise time events, see initTimeEvents().");
+}
+
+std::vector<std::array<int, 3>> tempoNetwork::getFutureNeighbours(int u,
+                                                                  int idEvent) {
   if (not isTimeSet())
     throw missing_temporal_init(
         "must first initialise time events, see initTimeEvents().");

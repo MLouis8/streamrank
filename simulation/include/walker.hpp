@@ -12,10 +12,26 @@ public:
   }
   int getId() const { return _id; }
   Location getLoc() { return _pos; }
+  /**
+   * Function executing the step of a pagerank simulation
+   */
   Location step(Network &net, float alpha);
+  /**
+   * Function executing the step of the DTRW
+   */
   Location step(tempoNetwork &tnet, float alpha);
+  /**
+   * Function executing the step of the approximation of the DTRW
+   */
   Location approxStep(tempoNetwork &tnet, float alpha);
-  Location continuousStep(tempoNetwork &tnet, float alpha);
+  /**
+   * Function executing the step corresponding to the upper bound of the DTRW
+   */
+  Location upperBound(tempoNetwork &tnet, float alpha);
+  /**
+   * Function executing the step corresponding to the lower bound of the DTRW
+   */
+  Location lowerBound(tempoNetwork &tnet, float alpha);
 
 private:
   int _id;
