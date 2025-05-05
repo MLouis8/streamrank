@@ -12,6 +12,8 @@ int main(int argc, char *argv[]) {
   int nbWalkers = std::atoi(argv[2]);   // 1000;
   float probaEdge = std::atof(argv[3]); // 0.5;
   int nbSteps = std::atoi(argv[4]);     // 50;
+  std::cout << nbVertices << " " << nbWalkers << " " << probaEdge << " "
+            << nbSteps << std::endl;
   float eps = 0.0001;
   float alpha = 0.85;
 
@@ -29,12 +31,12 @@ int main(int argc, char *argv[]) {
   Network net = randomErdosRenyiNetwork(nbVertices, probaEdge);
 
   //   net.display();
-  net.checkConsistency();
+  //   net.checkConsistency();
 
   std::vector<std::vector<int>> res =
       randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net);
 
-  displayResults(res, nbVertices);
+  //   displayResults(res, nbVertices);
   //   for (int w = 0; w < res.size(); w++) {
   //     std::cout << "Walker" << w << ": ";
   //     for (auto pos : res[w])
