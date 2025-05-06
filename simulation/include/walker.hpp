@@ -4,6 +4,8 @@
 #include "network.hpp"
 #include "temporalNetwork.hpp"
 
+typedef std::pair<int, int> DTNode;
+
 template <typename Location> class Walker {
 public:
   Walker(int id, Location startingPos) {

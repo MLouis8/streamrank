@@ -10,6 +10,16 @@
 #include <utility>
 #include <vector>
 
+int tempoNetwork::getRdLocation(int u) {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(0, _n - 1);
+  int dest = dis(gen);
+  while (dest == u)
+    dest = dis(gen);
+  return dest;
+}
+
 TIntervals tempoNetwork::getTIntervals(int u, int v) {
   auto it = _E.find(pairToStr({u, v}));
   if (it != _E.end()) {

@@ -3,16 +3,17 @@
 
 #include "network.hpp"
 #include "temporalNetwork.hpp"
-#include <string>
+#include <functional>
+#include <utility>
 
 std::vector<std::vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps,
                                                    float eps, float alpha,
                                                    Network &net);
 
-template <typename Location>
-std::vector<std::vector<Location>>
+std::vector<std::vector<std::pair<int, int>>>
 randomWalkSimulation(int nbWalkers, int nbSteps, float eps, float alpha,
-                     tempoNetwork &tnet, std::string step);
+                     tempoNetwork &tnet, std::function<float(float)> h,
+                     int stepType);
 
 std::vector<float> walkersDistribution(std::vector<std::vector<int>> steps,
                                        int k, int n);

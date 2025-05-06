@@ -1,11 +1,8 @@
 #include "include/walker.hpp"
 #include "include/temporalNetwork.hpp"
-#include <iostream>
 #include <random>
 #include <utility>
-
-typedef std::pair<int, int> DTNode;
-typedef std::pair<int, float> CTNode;
+#include <vector>
 
 template <> int Walker<int>::step(Network &net, float alpha) {
   std::random_device rd;
@@ -30,10 +27,20 @@ template <> DTNode Walker<DTNode>::step(tempoNetwork &tnet, float alpha) {
 }
 
 template <> DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha) {
-  return {0, 0};
+  std::random_device rd;
+  std::default_random_engine eng(rd());
+  std::vector<std::tuple<int, int, int>> fneighbours =
+      tnet.getFutureNeighbours(_pos.first, _pos.second);
+  std::vector<float> w;
+  for (auto tup : fneighbours) {
+    w.push_back(std::get<2>(tup) - std::get<1>(tup));
+  }
+  std::discrete_distribution<> dis(w.begin(), w.end());
+  int v = std::get<0>(fneighbours[dis(eng)]);
 }
 
 template <>
-CTNode Walker<CTNode>::continuousStep(tempoNetwork &tnet, float alpha) {
-  return {0, 0.};
-}
+DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha) {}
+
+template <>
+DTNode Walker<DTNode>::lowerBound(tempoNetwork &tnet, float alpha) {}

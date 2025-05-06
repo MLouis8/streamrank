@@ -1,5 +1,7 @@
 #include "include/randomWalk.hpp"
+#include "include/temporalNetwork.hpp"
 #include "include/walker.hpp"
+#include <functional>
 #include <iostream>
 #include <vector>
 
@@ -16,6 +18,38 @@ std::vector<std::vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps,
   for (int s = 1; s < nbSteps; s++) {
     for (int i = 0; i < nbWalkers; i++) {
       int newLoc = walkersList[i].step(net, alpha);
+      walkersPositions[i].push_back(newLoc);
+    }
+  }
+  return walkersPositions;
+}
+
+std::vector<std::vector<std::pair<int, int>>>
+randomWalkSimulation(int nbWalkers, int nbSteps, float eps, float alpha,
+                     tempoNetwork &tnet, std::function<float(float)> h,
+                     int stepType) {
+  std::vector<std::vector<DTNode>> walkersPositions;
+  std::vector<Walker<DTNode>> walkersList;
+  for (int i = 0; i < nbWalkers; i++) {
+    int startingPosition = tnet.getRdLocation(-1);
+    walkersPositions.push_back({{startingPosition, 0}});
+    walkersList.push_back(Walker<DTNode>(i, {startingPosition, 0}));
+  }
+  for (int s = 1; s < nbSteps; s++) {
+    for (int i = 0; i < nbWalkers; i++) {
+      DTNode newLoc;
+      switch (stepType) {
+      case 0: // DTRW
+        newLoc = walkersList[i].step(tnet, alpha);
+      case 1: // approx
+        newLoc = walkersList[i].approxStep(tnet, alpha);
+      case 2: // upper bound
+        newLoc = walkersList[i].upperBound(tnet, alpha);
+      case 3: // lower bound
+        newLoc = walkersList[i].step(tnet, alpha);
+      default: // approx
+        newLoc = walkersList[i].lowerBound(tnet, alpha);
+      }
       walkersPositions[i].push_back(newLoc);
     }
   }

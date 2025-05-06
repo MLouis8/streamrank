@@ -23,6 +23,7 @@ public:
   TIntervals getTIntervals(int u) { return _W[u]; }
   TIntervals getTIntervals(int u, int v);
   bool isTimeSet() { return _timeAspectSet; }
+  int getRdLocation(int u);
 
   /**
    * Instantiate tempoNetwork class attributes linked to time: _events,
