@@ -2,14 +2,17 @@
 #define TEMPORALNETWORK_HPP
 
 #include "event.hpp"
+
 #include <cmath>
 #include <string>
-#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 typedef std::vector<std::pair<float, float>> TIntervals;
+typedef std::pair<int, int> DTNode;
+typedef std::unordered_map<int, std::vector<std::pair<int, int>>>
+    FNeighbourhood;
 
 class tempoNetwork {
 public:
@@ -23,7 +26,7 @@ public:
   TIntervals getTIntervals(int u) { return _W[u]; }
   TIntervals getTIntervals(int u, int v);
   bool isTimeSet() { return _timeAspectSet; }
-  int getRdLocation(int u);
+  float getEventVal(int eventId) { return _events[eventId].getVal(); }
 
   /**
    * Instantiate tempoNetwork class attributes linked to time: _events,
@@ -36,9 +39,11 @@ public:
   int timeToEventId(float t);
   bool checkNodePres(int u, float t);
   bool checkEdgePres(int u, int v, float t);
+  bool checkEdgeAtEvent(int u, int v, int event);
   float getNodeVanishT(int u, float t);
   float getNodeAppearT(int u, float t);
-
+  int getNodeVanishEventId(int u, int k);
+  int getNodeAppearEventId(int u, int k);
   /**
    * Returns the vector of node ids neighbours of u at the event time
    * corresponding to t
@@ -50,14 +55,12 @@ public:
    */
   std::vector<int> getInstantEventNeighbours(int u, int eventId);
   /**
-   * Returns a vector of tuples of int containing [nodeId, appearance event id,
-   * vanishing event id] of the nodes linked to u in the time
-   * segment [t, t_+(u)]
+   * Returns a map linking a node v to its intervals for all nodes v linked to u
+   * in the time segment [s, s_+(u)] such that [t_-(v), t_+(v)] is an interval
+   * if t is in [s, s_+(u)]
    */
-  std::vector<std::tuple<int, int, int>> getFutureNeighbours(int u,
-                                                             int idEvent);
-  int getNodeVanishEventId(int u, int k);
-  int getNodeAppearEventId(int u, int k);
+  FNeighbourhood getFutureNeighbours(int u, int idEvent);
+  DTNode getRdLocation(DTNode prevLoc);
 
 private:
   float _tStart;
@@ -85,6 +88,9 @@ public:
   const char *what() const throw() { return message.c_str(); }
 };
 
+/**
+ * Checks if the time given as parameter lies in one of the intervals
+ */
 bool timeValid(TIntervals, float t);
 tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd, float p1,
                                 float p2, float p3);

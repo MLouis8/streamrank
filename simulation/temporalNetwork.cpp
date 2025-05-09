@@ -5,20 +5,9 @@
 #include <random>
 #include <sstream>
 #include <string>
-#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-int tempoNetwork::getRdLocation(int u) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> dis(0, _n - 1);
-  int dest = dis(gen);
-  while (dest == u)
-    dest = dis(gen);
-  return dest;
-}
 
 TIntervals tempoNetwork::getTIntervals(int u, int v) {
   auto it = _E.find(pairToStr({u, v}));
@@ -102,44 +91,16 @@ bool tempoNetwork::checkEdgePres(int u, int v, float t) {
   return timeValid(intervals, t);
 }
 
-std::vector<int> tempoNetwork::getInstantEventNeighbours(int u, int eventId) {
+bool tempoNetwork::checkEdgeAtEvent(int u, int v, int event) {
   if (not isTimeSet())
     throw missing_temporal_init(
         "must first initialise time events, see initTimeEvents().");
-  std::vector<int> instantNeighbours;
-  for (auto edge : _edgeEvents[eventId]) {
-    if (edge.first == u)
-      instantNeighbours.push_back(edge.second);
-    if (edge.second == u)
-      instantNeighbours.push_back(edge.first);
+  for (auto edge : _edgeEvents[event]) {
+    if ((edge.first == u && edge.second == v) ||
+        (edge.first == v && edge.second == u))
+      return true;
   }
-  return instantNeighbours;
-}
-
-std::vector<int> tempoNetwork::getInstantNeighbours(int u, float t) {
-  return getInstantEventNeighbours(u, timeToEventId(t));
-}
-
-std::vector<std::tuple<int, int, int>>
-tempoNetwork::getFutureNeighbours(int u, int idEvent) {
-  if (not isTimeSet())
-    throw missing_temporal_init(
-        "must first initialise time events, see initTimeEvents().");
-  int vanishId = getNodeVanishEventId(u, idEvent);
-  std::vector<std::tuple<int, int, int>> res;
-  for (int i = idEvent; i < vanishId; i++) {
-    for (int neighbour : getInstantEventNeighbours(u, i)) {
-      int prevSize = res.size();
-      for (int j = 0; j < prevSize; j++) {
-        if (std::get<0>(res[j]) == neighbour) {
-          std::get<2>(res[j]) = i + 1;
-        } else {
-          res.push_back(std::make_tuple(neighbour, i, i + 1));
-        }
-      }
-    }
-  }
-  return res;
+  return false;
 }
 
 int tempoNetwork::getNodeVanishEventId(int u, int k) {
@@ -166,6 +127,64 @@ float tempoNetwork::getNodeAppearT(int u, float t) {
       return interval.first;
   }
   return t;
+}
+
+std::vector<int> tempoNetwork::getInstantEventNeighbours(int u, int eventId) {
+  if (not isTimeSet())
+    throw missing_temporal_init(
+        "must first initialise time events, see initTimeEvents().");
+  std::vector<int> instantNeighbours;
+  for (auto edge : _edgeEvents[eventId]) {
+    if (edge.first == u)
+      instantNeighbours.push_back(edge.second);
+    if (edge.second == u)
+      instantNeighbours.push_back(edge.first);
+  }
+  return instantNeighbours;
+}
+
+std::vector<int> tempoNetwork::getInstantNeighbours(int u, float t) {
+  return getInstantEventNeighbours(u, timeToEventId(t));
+}
+
+FNeighbourhood tempoNetwork::getFutureNeighbours(int u, int idEvent) {
+  if (not isTimeSet())
+    throw missing_temporal_init(
+        "must first initialise time events, see initTimeEvents().");
+  int vanishId = getNodeVanishEventId(u, idEvent);
+  FNeighbourhood res;
+  for (int i = idEvent; i < vanishId; i++) {
+    for (int neighbour : getInstantEventNeighbours(u, i)) {
+      if (res.find(neighbour) == res.end()) {
+        res[neighbour] = {{i, i + 1}};
+      } else {
+        if (res[neighbour].back().second == i) {
+          res[neighbour].back().second = i + 1;
+        } else {
+          res[neighbour].push_back({i, i + 1});
+        }
+      }
+    }
+  }
+  return res;
+}
+
+DTNode tempoNetwork::getRdLocation(DTNode prevLoc) {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::vector<int> w;
+  for (auto nodeEvent : _nodeEvents) {
+    w.push_back(nodeEvent.size());
+  }
+  std::discrete_distribution<> dis1(w.begin(), w.end());
+  int s = dis1(gen);
+  while (s == prevLoc.second)
+    s = dis1(gen);
+  std::uniform_int_distribution<> dis2(0, _nodeEvents[s].size() - 1);
+  int u = dis2(gen);
+  while (u == prevLoc.first)
+    u = dis2(gen);
+  return {u, s};
 }
 
 bool timeValid(TIntervals intervals, float t) {

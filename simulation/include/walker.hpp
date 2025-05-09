@@ -3,8 +3,7 @@
 
 #include "network.hpp"
 #include "temporalNetwork.hpp"
-
-typedef std::pair<int, int> DTNode;
+#include <functional>
 
 template <typename Location> class Walker {
 public:
@@ -21,19 +20,22 @@ public:
   /**
    * Function executing the step of the DTRW
    */
-  Location step(tempoNetwork &tnet, float alpha);
+  Location step(tempoNetwork &tnet, float alpha, std::function<float(float)> h);
   /**
    * Function executing the step of the approximation of the DTRW
    */
-  Location approxStep(tempoNetwork &tnet, float alpha);
+  Location approxStep(tempoNetwork &tnet, float alpha,
+                      std::function<float(float)> h);
   /**
    * Function executing the step corresponding to the upper bound of the DTRW
    */
-  Location upperBound(tempoNetwork &tnet, float alpha);
+  Location upperBound(tempoNetwork &tnet, float alpha,
+                      std::function<float(float)> h);
   /**
    * Function executing the step corresponding to the lower bound of the DTRW
    */
-  Location lowerBound(tempoNetwork &tnet, float alpha);
+  Location lowerBound(tempoNetwork &tnet, float alpha,
+                      std::function<float(float)> h);
 
 private:
   int _id;
