@@ -1,9 +1,10 @@
 #include "include/temporalNetwork.hpp"
+#include "include/strHandler.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <ctime>
 #include <random>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -258,19 +259,4 @@ tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd, float p1,
   tempoNetwork net = tempoNetwork(tStart, tEnd, n, W, E);
   net.initTimeEvents();
   return net;
-}
-
-std::pair<int, int> strToPair(const std::string &key) {
-  std::istringstream iss(key);
-  std::pair<int, int> pair;
-  std::string token;
-  std::getline(iss, token, ';');
-  pair.first = std::stoi(token);
-  std::getline(iss, token, ';');
-  pair.second = std::stoi(token);
-  return pair;
-}
-
-std::string pairToStr(std::pair<int, int> pair) {
-  return std::to_string(pair.first) + ";" + std::to_string(pair.second);
 }

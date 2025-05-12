@@ -1,7 +1,5 @@
 #include "include/walker.hpp"
 #include "include/integral.hpp"
-#include "include/temporalNetwork.hpp"
-#include <functional>
 #include <random>
 #include <utility>
 #include <vector>

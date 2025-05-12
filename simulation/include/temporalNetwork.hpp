@@ -95,12 +95,4 @@ bool timeValid(TIntervals, float t);
 tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd, float p1,
                                 float p2, float p3);
 
-/**
- * Functions for translating back and forth _E keys from pair<int, int> to
- * string. The stirng format is 3;4
- */
-std::pair<int, int> strToPair(std::string key);
-
-std::string pairToStr(std::pair<int, int> pair);
-
 #endif // TEMPORALNETWORK_HPP

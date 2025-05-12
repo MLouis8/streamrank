@@ -1,13 +1,13 @@
 #include <fstream>
 #include <iostream>
-#include <map>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <utility>
+#include <unordered_map>
 #include <vector>
 
-#include "include/temporalNetwork.hpp"
+#include "include/fileHandler.hpp"
+#include "include/strHandler.hpp"
 
 tempoNetwork readStreamFile(const std::string &filename) {
   std::ifstream file(filename);
@@ -42,7 +42,7 @@ tempoNetwork readStreamFile(const std::string &filename) {
   }
 
   // Read the remaining lines into E
-  std::map<std::pair<int, int>, TIntervals> E;
+  std::unordered_map<std::string, TIntervals> E;
   std::string line;
   while (std::getline(file, line)) {
     std::istringstream iss(line);
@@ -56,7 +56,7 @@ tempoNetwork readStreamFile(const std::string &filename) {
       intervals.push_back({value1, value2});
     }
 
-    E[{nodeId1, nodeId2}] = intervals;
+    E[pairToStr({nodeId1, nodeId2})] = intervals;
   }
 
   file.close();

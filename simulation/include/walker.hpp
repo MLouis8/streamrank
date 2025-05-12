@@ -3,6 +3,7 @@
 
 #include "network.hpp"
 #include "temporalNetwork.hpp"
+
 #include <functional>
 
 template <typename Location> class Walker {

@@ -1,20 +1,24 @@
+#include "include/matrix.hpp"
 #include "include/network.hpp"
-#include "include/randomWalk.hpp"
-#include "include/temporalNetwork.hpp"
+#include "include/pagerank.hpp"
+// #include "include/randomWalk.hpp"
+// #include "include/temporalNetwork.hpp"
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 // Wheel of size 5
 //   std::vector<int> xadj0 = {0, 4, 5, 6, 7, 8};
 //   std::vector<int> adj0 = {1, 2, 3, 4, 0, 0, 0, 0};
 //   std::vector<float> adjWt0 = {1, 1, 1, 1, 1, 1, 1, 1};
-//   Network net0 = Network(xadj0, adj0, adjWt0);
+//   Network net0(xadj0, adj0, adjWt0);
 
 // K3
 //   std::vector<int> xadj1 = {0, 2, 4, 6};
 //   std::vector<int> adj1 = {2, 3, 1, 3, 1, 2};
 //   std::vector<float> adjWt1 = {1, 1, 1, 1, 1, 1};
+//   Network net1(xadj1, adj1, adjWt1);
 
 //   for (int w = 0; w < res.size(); w++) {
 //     std::cout << "Walker" << w << ": ";
@@ -53,21 +57,25 @@ int main(int argc, char *argv[]) {
                            3, 4, 0, 1, 2, 4, 0, 1, 2, 3};
   std::vector<float> adjWt2 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                                1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-  Network net2 = Network(xadj2, adj2, adjWt2);
+  Network net2(xadj2, adj2, adjWt2);
 
   // Network net = randomErdosRenyiNetwork(nbVertices, probaEdge);
   // net.display();
   // net.checkConsistency();
 
-  std::vector<std::vector<int>> res =
-      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net2);
+  // std::vector<std::vector<int>> res =
+  //     randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net2);
 
-  displayResults(res, nbVertices);
+  // displayResults(res, nbVertices);
 
-  tempoNetwork tnet =
-      randomTempoNetwork(nbVertices, tStart, tEnd, probaEdge, p2, p3);
+  // tempoNetwork tnet =
+  //     randomTempoNetwork(nbVertices, tStart, tEnd, probaEdge, p2, p3);
 
   // std::vector<std::vector<int>> tres = randomWalkSimulation();
 
+  Matrix p({1, net2.size()});
+  std::pair<Matrix, Matrix> ha = networkToPagerakMatrices(net2);
+  Matrix pr = pwrPagerank(ha.first, ha.second, alpha, p, 100, eps);
+  pr.print();
   return 0;
 }

@@ -1,18 +1,15 @@
 #ifndef PAGERANK_HPP
 #define PAGERANK_HPP
 
+#include "matrix.hpp"
 #include "network.hpp"
 #include <utility>
-#include <vector>
-
-using namespace std;
 
 /**
  * Function taking a graph and returning the corresponding transition matrix and
  * dangling node vector.
  */
-pair<vector<vector<float>>, vector<float>>
-networkToPagerakMatrices(Network &net);
+std::pair<Matrix, Matrix> networkToPagerakMatrices(Network &net);
 
 /**
  * Function computing the pagerank value using the classic power method.
@@ -25,7 +22,7 @@ networkToPagerakMatrices(Network &net);
  *  iter, eps: convergence criteria, the computation stops when the first one is
  * met
  */
-vector<float> pwrPagerank(vector<vector<float>> &h, vector<float> &a,
-                          float alpha, vector<float> &p, int iter, float eps);
+Matrix pwrPagerank(Matrix &h, Matrix &a, float alpha, Matrix &p, int iter,
+                   float eps);
 
 #endif // PAGERANK_HPP
