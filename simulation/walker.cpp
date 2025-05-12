@@ -1,4 +1,5 @@
 #include "include/walker.hpp"
+#include "include/integral.hpp"
 #include "include/temporalNetwork.hpp"
 #include <functional>
 #include <random>
@@ -117,6 +118,55 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
   if (jumpDis(eng) > alpha || fnhb.size() == 0) {
     _pos = tnet.getRdLocation(_pos);
   } else {
+    // choose v amongts the future neighbours of u
+    std::vector<float> w1;
+    std::vector<int> neighbours;
+    for (auto &[key, val] : fnhb) {
+      float s = 0;
+      for (auto interval : val) {
+        s += interval.second - interval.first + 1;
+      }
+      w1.push_back(s);
+      neighbours.push_back(key);
+    }
+    std::discrete_distribution<> dis1(w1.begin(), w1.end());
+    int v = neighbours[dis1(eng)];
+
+    // select an event
+    int uEnd = tnet.getNodeVanishEventId(_pos.first, _pos.second);
+    int vStart, vEnd;
+    for (auto interval : fnhb[v]) {
+      if (interval.second >= _pos.second) {
+        vStart = interval.first;
+        vEnd = interval.second;
+        break;
+      }
+    }
+    std::vector<int> possibleEvents;
+    std::vector<float> w2;
+    float tk1 = tnet.getEventVal(_pos.second + 1);
+    float tk = tnet.getEventVal(_pos.second);
+    for (int l = _pos.second + 1; l <= vEnd; l++) {
+      possibleEvents.push_back(l);
+      float tl = tnet.getEventVal(l);
+      float w = 0.;
+      for (int i = _pos.second; i <= l; i++) {
+        if (i <= uEnd && vStart <= i &&
+            tnet.checkEdgeAtEvent(_pos.first, v, i) &&
+            tnet.checkEdgeAtEvent(_pos.first, v, i + 1)) {
+          float ti1 = tnet.getEventVal(i + 1);
+          float ti = tnet.getEventVal(i);
+          float ti1End = tnet.getNodeVanishT(v, ti1);
+          float div = integral(ti1 - tk, ti1End - tk, h, 100);
+          w += (ti1 - ti) / div;
+        }
+      }
+      w = w * h(tl - tk1);
+      w2.push_back(w);
+    }
+    std::discrete_distribution<> dis2(w2.begin(), w2.end());
+    int t = possibleEvents[dis2(eng)];
+    _pos = {v, t};
   }
   return _pos;
 }
@@ -132,6 +182,56 @@ DTNode Walker<DTNode>::lowerBound(tempoNetwork &tnet, float alpha,
   if (jumpDis(eng) > alpha || fnhb.size() == 0) {
     _pos = tnet.getRdLocation(_pos);
   } else {
+    // choose v amongts the future neighbours of u
+    std::vector<float> w1;
+    std::vector<int> neighbours;
+    for (auto &[key, val] : fnhb) {
+      float s = 0;
+      for (auto interval : val) {
+        s += interval.second - interval.first + 1;
+      }
+      w1.push_back(s);
+      neighbours.push_back(key);
+    }
+    std::discrete_distribution<> dis1(w1.begin(), w1.end());
+    int v = neighbours[dis1(eng)];
+
+    // select an event
+    int uEnd = tnet.getNodeVanishEventId(_pos.first, _pos.second);
+    int vStart, vEnd;
+    for (auto interval : fnhb[v]) {
+      if (interval.second >= _pos.second) {
+        vStart = interval.first;
+        vEnd = interval.second;
+        break;
+      }
+    }
+    std::vector<int> possibleEvents;
+    std::vector<float> w2;
+    float tk1 = tnet.getEventVal(_pos.second + 1);
+    for (int l = _pos.second + 1; l <= vEnd; l++) {
+      possibleEvents.push_back(l);
+      float tl = tnet.getEventVal(l);
+      float w = 0.;
+      for (int i = _pos.second + 1; i < l; i++) {
+        if (i <= uEnd && vStart <= i &&
+            tnet.checkEdgeAtEvent(_pos.first, v, i) &&
+            tnet.checkEdgeAtEvent(_pos.first, v, i + 1)) {
+          float ti1 = tnet.getEventVal(i + 1);
+          float ti = tnet.getEventVal(i);
+          float tiEnd = tnet.getNodeVanishT(v, ti);
+          float div = integral(ti - tk1, tiEnd - tk1, h, 100);
+          w += (ti1 - ti) / div;
+        }
+      }
+      float tl1 = tnet.getEventVal(vEnd + 1);
+      float tk = tnet.getEventVal(_pos.second);
+      w = w * h(tl1 - tk);
+      w2.push_back(w);
+    }
+    std::discrete_distribution<> dis2(w2.begin(), w2.end());
+    int t = possibleEvents[dis2(eng)];
+    _pos = {v, t};
   }
   return _pos;
 }
