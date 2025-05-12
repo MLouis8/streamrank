@@ -4,23 +4,29 @@
 #include <utility>
 #include <vector>
 
-class matrix {
+class Matrix {
 public:
-  matrix(std::vector<std::vector<float>> data);
-  matrix(std::vector<float> data);
+  Matrix(std::pair<int, int> dim) : _dim(dim) {
+    _data.assign(dim.first * dim.second, 0.);
+  }
+  Matrix(std::vector<std::vector<float>> data);
+  Matrix(std::vector<float> data, std::pair<int, int> dim)
+      : _dim(dim), _data(data) {}
 
   std::pair<int, int> dim() { return _dim; }
-  float &operator()(unsigned row, unsigned col) {
-    return data_[dim_ * row + col];
-  }
-
-  int operator()(unsigned row, unsigned col) const {
-    return data_[dim_ * row + col];
+  float &operator()(int row, int col) { return _data[_dim.second * row + col]; }
+  float operator()(int row, int col) const {
+    return _data[_dim.second * row + col];
   }
 
   void print();
-  matrix operator+(matrix b);
-  matrix operator-(matrix b);
+  Matrix operator+(Matrix b);
+  Matrix operator-(Matrix b);
+  Matrix operator*(Matrix b);
+
+  Matrix operator+(float x);
+  Matrix operator-(float x);
+  Matrix operator*(float x);
 
 private:
   std::pair<int, int> _dim;
