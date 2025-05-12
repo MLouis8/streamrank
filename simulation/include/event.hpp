@@ -12,7 +12,7 @@
 class Event {
 public:
   Event(float val) : _val(val), _eps(1e-7) {}
-  float getVal() { return _val; }
+  float val() { return _val; }
 
   bool operator==(const Event &other) const {
     return std::fabs(_val - other._val) < _eps;

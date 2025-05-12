@@ -7,14 +7,14 @@
 #include <random>
 #include <vector>
 
-std::vector<int> Network::getNeighbours(int u) {
-  std::vector<int> neighbours;
+std::vector<int> Network::neighbours(int u) {
+  std::vector<int> neigh;
   for (int i = _xadjacency[u]; i < _xadjacency[u + 1]; i++)
-    neighbours.push_back(_adjacency[i]);
-  return neighbours;
+    neigh.push_back(_adjacency[i]);
+  return neigh;
 }
 
-std::vector<float> Network::getNeighboursWeights(int u) {
+std::vector<float> Network::neighboursWeights(int u) {
   std::vector<float> weights;
   for (int i = _xadjacency[u]; i < _xadjacency[u + 1]; i++)
     weights.push_back(_adjacencyWeight[i]);
@@ -50,8 +50,8 @@ void Network::display() {
 
 void Network::checkConsistency() {
   assert(_n == _xadjacency.size() - 1);
-  assert(getNbEdges() == _adjacency.size());
-  assert(_xadjacency.back() == getNbEdges());
+  assert(nbEdges() == _adjacency.size());
+  assert(_xadjacency.back() == nbEdges());
   assert(_xadjacency[0] == 0);
   auto isSorted = [&](std::vector<int> v) {
     for (int i = 1; i < v.size(); i++)
@@ -62,11 +62,10 @@ void Network::checkConsistency() {
   assert(isSorted(_xadjacency));
   auto neighbourConsistent = [&]() {
     for (int u = 0; u < _n; u++) {
-      std::vector<int> neighbours = getNeighbours(u);
-      for (auto v : neighbours) {
-        std::vector<int> neighbourNeighbours = getNeighbours(v);
-        int occ = std::count(neighbourNeighbours.begin(),
-                             neighbourNeighbours.end(), u);
+      std::vector<int> neigh = neighbours(u);
+      for (auto v : neigh) {
+        std::vector<int> vNeigh = neighbours(v);
+        int occ = std::count(vNeigh.begin(), vNeigh.end(), u);
         if (occ != 1)
           return false;
       }

@@ -45,9 +45,9 @@ void tempoNetwork::initTimeEvents() {
   for (int u = 0; u < _W.size(); u++) {
     int t = 0;
     for (auto interval : _W[u]) {
-      while (events[t].getVal() < interval.first)
+      while (events[t].val() < interval.first)
         t++;
-      while (events[t + 1].getVal() <= interval.second) {
+      while (events[t + 1].val() <= interval.second) {
         nodeEvents[t].push_back(u);
         t++;
       }

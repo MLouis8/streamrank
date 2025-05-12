@@ -11,8 +11,8 @@ public:
     _id = id;
     _pos = startingPos;
   }
-  int getId() const { return _id; }
-  Location getLoc() { return _pos; }
+  int id() const { return _id; }
+  Location pos() { return _pos; }
   /**
    * Function executing the step of a pagerank simulation
    */

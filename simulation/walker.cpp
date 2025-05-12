@@ -11,13 +11,12 @@ template <> int Walker<int>::step(Network &net, float alpha) {
   std::default_random_engine eng(rd());
   std::uniform_real_distribution<float> jumpDis(0, 1);
 
-  std::vector<int> neighbours = net.getNeighbours(_pos);
+  std::vector<int> neigh = net.neighbours(_pos);
 
-  if (jumpDis(eng) > alpha ||
-      neighbours.size() == 0) { // jump anywhere in the graph
+  if (jumpDis(eng) > alpha || neigh.size() == 0) { // jump anywhere in the graph
     _pos = net.getRdLocation(_pos);
   } else { // walk to a neighbour
-    std::vector<float> weights = net.getNeighboursWeights(_pos);
+    std::vector<float> weights = net.neighboursWeights(_pos);
     std::discrete_distribution<> neighbourDis(weights.begin(), weights.end());
     _pos = neighbourDis(eng);
   }

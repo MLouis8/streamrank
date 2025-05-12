@@ -20,13 +20,13 @@ public:
                std::unordered_map<std::string, TIntervals> E)
       : _tStart(tStart), _tEnd(tEnd), _n(n), _W(W), _E(E),
         _timeAspectSet(false) {}
-  float getStartingT() { return _tStart; }
-  float getEndingT() { return _tEnd; }
-  int getSize() { return _n; }
+  float startTime() { return _tStart; }
+  float endTime() { return _tEnd; }
+  int size() { return _n; }
   TIntervals getTIntervals(int u) { return _W[u]; }
   TIntervals getTIntervals(int u, int v);
   bool isTimeSet() { return _timeAspectSet; }
-  float getEventVal(int eventId) { return _events[eventId].getVal(); }
+  float getEventVal(int eventId) { return _events[eventId].val(); }
 
   /**
    * Instantiate tempoNetwork class attributes linked to time: _events,

@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
   tempoNetwork tnet =
       randomTempoNetwork(nbVertices, tStart, tEnd, probaEdge, p2, p3);
 
-  std::vector<std::vector<int>> tres = randomWalkSimulation();
+  // std::vector<std::vector<int>> tres = randomWalkSimulation();
 
   return 0;
 }

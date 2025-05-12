@@ -8,14 +8,14 @@ public:
   Network(std::vector<int> xadj, std::vector<int> adj, std::vector<float> adjWt)
       : _n(xadj.size() - 1), _xadjacency(xadj), _adjacency(adj),
         _adjacencyWeight(adjWt) {}
-  std::vector<int> getXadjacency() { return _xadjacency; }
-  std::vector<float> getAdjacencyWeight() { return _adjacencyWeight; }
-  std::vector<int> getAdjacency() { return _adjacency; }
-  int getSize() { return _n; }
-  int getNbEdges() { return _adjacencyWeight.size(); }
+  std::vector<int> xAdjacency() { return _xadjacency; }
+  std::vector<float> adjacencyWeight() { return _adjacencyWeight; }
+  std::vector<int> adjacency() { return _adjacency; }
+  int size() { return _n; }
+  int nbEdges() { return _adjacencyWeight.size(); }
 
-  std::vector<int> getNeighbours(int u);
-  std::vector<float> getNeighboursWeights(int u);
+  std::vector<int> neighbours(int u);
+  std::vector<float> neighboursWeights(int u);
   int getRdLocation(int u);
   void display();
   void checkConsistency();
