@@ -6,6 +6,9 @@
 #include <functional>
 #include <utility>
 
+/**
+ * Simulation of a random walk on a static network (graph).
+ */
 std::vector<std::vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps,
                                                    float eps, float alpha,
                                                    Network &net);

@@ -4,6 +4,10 @@
 #include <utility>
 #include <vector>
 
+/**
+ * Matrix class in order to do simple matrix multiplications for pagerank
+ * computation
+ */
 class Matrix {
 public:
   Matrix(std::pair<int, int> dim) : _dim(dim) {

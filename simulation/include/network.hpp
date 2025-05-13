@@ -3,6 +3,9 @@
 
 #include <vector>
 
+/**
+ * Network class, a graph stored with adjacency lists.
+ */
 class Network {
 public:
   Network(std::vector<int> xadj, std::vector<int> adj, std::vector<float> adjWt)
