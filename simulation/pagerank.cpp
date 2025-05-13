@@ -7,12 +7,10 @@
 
 std::pair<Matrix, Matrix> networkToPagerakMatrices(Network &net) {
   std::vector<std::vector<float>> h;
-  std::vector<float> a;
-  a.assign(net.size(), 0.);
+  std::vector<float> a(net.size(), 0.);
   for (int u = 0; u < net.size(); u++) {
     std::vector<int> neigh = net.neighbours(u);
-    std::vector<float> hh;
-    hh.assign(net.size(), 0.);
+    std::vector<float> hh(net.size(), 0.);
     if (neigh.size() == 0) {
       a[u] = 1.;
     } else {

@@ -1,18 +1,19 @@
 #include "include/matrix.hpp"
 #include "include/network.hpp"
 #include "include/pagerank.hpp"
-// #include "include/randomWalk.hpp"
+#include "include/randomWalk.hpp"
 // #include "include/temporalNetwork.hpp"
 #include <iostream>
+#include <numeric>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
 // Wheel of size 5
-//   std::vector<int> xadj0 = {0, 4, 5, 6, 7, 8};
-//   std::vector<int> adj0 = {1, 2, 3, 4, 0, 0, 0, 0};
-//   std::vector<float> adjWt0 = {1, 1, 1, 1, 1, 1, 1, 1};
-//   Network net0(xadj0, adj0, adjWt0);
+std::vector<int> xadj0 = {0, 4, 5, 6, 7, 8};
+std::vector<int> adj0 = {1, 2, 3, 4, 0, 0, 0, 0};
+std::vector<float> adjWt0 = {1, 1, 1, 1, 1, 1, 1, 1};
+Network net0(xadj0, adj0, adjWt0);
 
 // K3
 //   std::vector<int> xadj1 = {0, 2, 4, 6};
@@ -47,35 +48,46 @@ int main(int argc, char *argv[]) {
 
   std::cout << nbVertices << " " << nbWalkers << " " << probaEdge << " "
             << nbSteps << std::endl;
-  std::cout << tStart << tEnd << p2 << p3 << std::endl;
+  if (argc == 9)
+    std::cout << tStart << " " << tEnd << " " << p2 << " " << p3 << std::endl;
   float eps = 0.00001;
   float alpha = 0.85;
 
   // K5
-  std::vector<int> xadj2 = {0, 4, 8, 12, 16, 20};
-  std::vector<int> adj2 = {1, 2, 3, 4, 0, 2, 3, 4, 0, 1,
-                           3, 4, 0, 1, 2, 4, 0, 1, 2, 3};
-  std::vector<float> adjWt2 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                               1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-  Network net2(xadj2, adj2, adjWt2);
+  // std::vector<int> xadj2 = {0, 4, 8, 12, 16, 20};
+  // std::vector<int> adj2 = {1, 2, 3, 4, 0, 2, 3, 4, 0, 1,
+  //                          3, 4, 0, 1, 2, 4, 0, 1, 2, 3};
+  // std::vector<float> adjWt2 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  //                              1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  // Network net2(xadj2, adj2, adjWt2);
 
   // Network net = randomErdosRenyiNetwork(nbVertices, probaEdge);
   // net.display();
   // net.checkConsistency();
 
-  // std::vector<std::vector<int>> res =
-  //     randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net2);
+  std::vector<std::vector<int>> rdWalk =
+      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net0);
 
-  // displayResults(res, nbVertices);
+  displayResults(rdWalk, net0.size());
 
   // tempoNetwork tnet =
   //     randomTempoNetwork(nbVertices, tStart, tEnd, probaEdge, p2, p3);
 
   // std::vector<std::vector<int>> tres = randomWalkSimulation();
 
-  Matrix p({1, net2.size()});
-  std::pair<Matrix, Matrix> ha = networkToPagerakMatrices(net2);
-  Matrix pr = pwrPagerank(ha.first, ha.second, alpha, p, 100, eps);
+  std::cout << "Pagerank:" << std::endl;
+  std::vector<float> pValues(net0.size(), 1. / net0.size());
+  Matrix p(pValues, {1, net0.size()});
+  std::pair<Matrix, Matrix> ha = networkToPagerakMatrices(net0);
+  Matrix pr = pwrPagerank(ha.first, ha.second, alpha, p, nbSteps, eps);
   pr.print();
+
+  int k = rdWalk[0].size() - 1;
+  std::vector<float> res = walkersDistribution(rdWalk, k, net0.size());
+
+  std::vector<float> diff;
+  for (int i = 0; i < pr.dim().second; i++)
+    diff.push_back(std::abs(pr(0, i) - res[i]));
+  std::cout << accumulate(diff.begin(), diff.end(), 0.);
   return 0;
 }

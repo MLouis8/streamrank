@@ -34,18 +34,14 @@ int Network::getRdLocation(int u) {
 void Network::display() {
   std::cout << "Number of nodes: " << _n << std::endl;
   std::cout << "Cumulative nb of neighbour per node:";
-  for (auto x : _xadjacency) {
+  for (auto x : _xadjacency)
     std::cout << " " << x;
-  }
   std::cout << std::endl << "Ordered list of neighbours:";
-  for (auto a : _adjacency) {
+  for (auto a : _adjacency)
     std::cout << " " << a;
-  }
-
   std::cout << std::endl << "Weight of the above edges:";
-  for (auto w : _adjacencyWeight) {
+  for (auto w : _adjacencyWeight)
     std::cout << " " << w;
-  }
 }
 
 void Network::checkConsistency() {
@@ -75,11 +71,8 @@ void Network::checkConsistency() {
 }
 
 Network randomErdosRenyiNetwork(int n, float p) {
-  std::vector<int> xadjacency;
-  std::vector<float> adjacencyWeight;
+  std::vector<int> xadjacency(n + 1, 0);
   std::vector<int> adjacency;
-
-  xadjacency.assign(n + 1, 0);
 
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -104,6 +97,6 @@ Network randomErdosRenyiNetwork(int n, float p) {
     }
     xadjacency[i + 1] = xadjacency[i] + x;
   }
-  adjacencyWeight.assign(adjacency.size(), 1);
+  std::vector<float> adjacencyWeight(adjacency.size(), 1);
   return Network(xadjacency, adjacency, adjacencyWeight);
 }

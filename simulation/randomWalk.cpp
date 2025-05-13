@@ -60,17 +60,15 @@ randomWalkSimulation(int nbWalkers, int nbSteps, float eps, float alpha,
 
 std::vector<float> walkersDistribution(std::vector<std::vector<int>> steps,
                                        int k, int n) {
-  std::vector<float> res;
-  res.assign(n, 0.);
-  for (auto walker : steps) {
+  std::vector<float> res(n, 0.);
+  for (auto walker : steps)
     res[walker[k]] += 1. / steps.size();
-  }
   return res;
 }
 
-void displayResults(std::vector<std::vector<int>> rdWalk, int n) {
-  int k = rdWalk[0].size() - 1;
-  std::vector<float> res = walkersDistribution(rdWalk, k, n);
+void displayResults(std::vector<std::vector<int>> steps, int n) {
+  int k = steps[0].size() - 1;
+  std::vector<float> res = walkersDistribution(steps, k, n);
   std::cout << "Pagerank Vector: ";
   for (auto val : res)
     std::cout << " " << val;

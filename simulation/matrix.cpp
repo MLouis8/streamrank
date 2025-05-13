@@ -50,9 +50,9 @@ Matrix Matrix::operator*(Matrix b) {
   if (this->dim().second != b.dim().first)
     throw std::invalid_argument(
         "Matrices must have a single common dimension for multiplication.");
-  Matrix c(b.dim());
+  Matrix c({this->dim().first, b.dim().second});
   for (int i = 0; i < c.dim().first; i++)
-    for (int k = 0; k < c.dim().first; k++)
+    for (int k = 0; k < b.dim().first; k++)
       for (int j = 0; j < c.dim().second; j++)
         c(i, j) += (*this)(i, k) * b(k, j);
   return c;
