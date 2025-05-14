@@ -10,16 +10,16 @@
 #include <vector>
 
 // Wheel of size 5
-std::vector<int> xadj0 = {0, 4, 5, 6, 7, 8};
-std::vector<int> adj0 = {1, 2, 3, 4, 0, 0, 0, 0};
-std::vector<float> adjWt0 = {1, 1, 1, 1, 1, 1, 1, 1};
-Network net0(xadj0, adj0, adjWt0);
+// std::vector<int> xadj0 = {0, 4, 5, 6, 7, 8};
+// std::vector<int> adj0 = {1, 2, 3, 4, 0, 0, 0, 0};
+// std::vector<float> adjWt0 = {1, 1, 1, 1, 1, 1, 1, 1};
+// Network net0(xadj0, adj0, adjWt0);
 
 // K3
-//   std::vector<int> xadj1 = {0, 2, 4, 6};
-//   std::vector<int> adj1 = {2, 3, 1, 3, 1, 2};
-//   std::vector<float> adjWt1 = {1, 1, 1, 1, 1, 1};
-//   Network net1(xadj1, adj1, adjWt1);
+// std::vector<int> xadj1 = {0, 2, 4, 6};
+// std::vector<int> adj1 = {2, 3, 1, 3, 1, 2};
+// std::vector<float> adjWt1 = {1, 1, 1, 1, 1, 1};
+// Network net1(xadj1, adj1, adjWt1);
 
 //   for (int w = 0; w < res.size(); w++) {
 //     std::cout << "Walker" << w << ": ";
@@ -27,6 +27,14 @@ Network net0(xadj0, adj0, adjWt0);
 //       std::cout << pos << " ";
 //     std::cout << std::endl;
 //   }
+
+// K5
+// std::vector<int> xadj2 = {0, 4, 8, 12, 16, 20};
+// std::vector<int> adj2 = {1, 2, 3, 4, 0, 2, 3, 4, 0, 1,
+//                          3, 4, 0, 1, 2, 4, 0, 1, 2, 3};
+// std::vector<float> adjWt2 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//                              1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+// Network net2(xadj2, adj2, adjWt2);
 
 int main(int argc, char *argv[]) {
   if (argc != 5 && argc != 9)
@@ -51,40 +59,31 @@ int main(int argc, char *argv[]) {
   if (argc == 9)
     std::cout << tStart << " " << tEnd << " " << p2 << " " << p3 << std::endl;
   float eps = 0.00001;
-  float alpha = 0.85;
+  float alpha = 0;
 
-  // K5
-  // std::vector<int> xadj2 = {0, 4, 8, 12, 16, 20};
-  // std::vector<int> adj2 = {1, 2, 3, 4, 0, 2, 3, 4, 0, 1,
-  //                          3, 4, 0, 1, 2, 4, 0, 1, 2, 3};
-  // std::vector<float> adjWt2 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  //                              1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-  // Network net2(xadj2, adj2, adjWt2);
-
-  // Network net = randomErdosRenyiNetwork(nbVertices, probaEdge);
+  Network net = randomErdosRenyiNetwork(nbVertices, probaEdge);
   // net.display();
-  // net.checkConsistency();
+  net.checkConsistency();
 
   std::vector<std::vector<int>> rdWalk =
-      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net0);
+      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net);
+  // displayResults(rdWalk, net.size());
 
-  displayResults(rdWalk, net0.size());
+  int k = rdWalk[0].size() - 1;
+  std::vector<float> res = walkersDistribution(rdWalk, k, net.size());
 
   // tempoNetwork tnet =
   //     randomTempoNetwork(nbVertices, tStart, tEnd, probaEdge, p2, p3);
-
   // std::vector<std::vector<int>> tres = randomWalkSimulation();
 
-  std::cout << "Pagerank:" << std::endl;
-  std::vector<float> pValues(net0.size(), 1. / net0.size());
-  Matrix p(pValues, {1, net0.size()});
-  std::pair<Matrix, Matrix> ha = networkToPagerakMatrices(net0);
+  std::vector<float> pValues(net.size(), 1. / net.size());
+  Matrix p(pValues, {1, net.size()});
+  std::pair<Matrix, Matrix> ha = networkToPagerakMatrices(net);
   Matrix pr = pwrPagerank(ha.first, ha.second, alpha, p, nbSteps, eps);
-  pr.print();
+  // std::cout << "Pagerank:" << std::endl;
+  // pr.print();
 
-  int k = rdWalk[0].size() - 1;
-  std::vector<float> res = walkersDistribution(rdWalk, k, net0.size());
-
+  std::cout << "Difference:" << std::endl;
   std::vector<float> diff;
   for (int i = 0; i < pr.dim().second; i++)
     diff.push_back(std::abs(pr(0, i) - res[i]));

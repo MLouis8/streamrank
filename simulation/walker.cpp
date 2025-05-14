@@ -1,5 +1,6 @@
 #include "include/walker.hpp"
 #include "include/integral.hpp"
+#include <iostream>
 #include <random>
 #include <utility>
 #include <vector>
@@ -10,7 +11,6 @@ template <> int Walker<int>::step(Network &net, float alpha) {
   std::uniform_real_distribution<float> jumpDis(0, 1);
 
   std::vector<int> neigh = net.neighbours(_pos);
-
   if (jumpDis(eng) > alpha || neigh.size() == 0) { // jump anywhere in the graph
     _pos = net.getRdLocation(_pos);
   } else { // walk to a neighbour

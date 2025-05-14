@@ -61,8 +61,11 @@ randomWalkSimulation(int nbWalkers, int nbSteps, float eps, float alpha,
 std::vector<float> walkersDistribution(std::vector<std::vector<int>> steps,
                                        int k, int n) {
   std::vector<float> res(n, 0.);
-  for (auto walker : steps)
+  std::cout << "step size " << steps.size() << std::endl;
+  for (auto walker : steps) {
     res[walker[k]] += 1. / steps.size();
+    std::cout << walker[k] << " ";
+  }
   return res;
 }
 
