@@ -3,14 +3,16 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <ctime>
+#include <iostream>
 #include <random>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-TIntervals tempoNetwork::getTIntervals(int u, int v) {
+TimeItvs tempoNetwork::getTimeItvs(int u, int v) {
   auto it = _E.find(pairToStr({u, v}));
   if (it != _E.end()) {
     return it->second;
@@ -21,21 +23,16 @@ TIntervals tempoNetwork::getTIntervals(int u, int v) {
 
 void tempoNetwork::initTimeEvents() {
   std::vector<Event> events = {Event(_tStart)};
-  for (auto intervals : _W) {
-    for (auto interval : intervals) {
-      Event first = Event(interval.first);
-      if (events.back() != first)
-        events.push_back(first);
-      events.push_back(Event(interval.second));
+  for (auto itvs : _W) {
+    for (auto itv : itvs) {
+      events.push_back(Event(itv.first));
+      events.push_back(Event(itv.second));
     }
   }
-  for (const auto &pair : _E) {
-    events.push_back(pair.second[0].first);
-    for (auto interval : pair.second) {
-      Event first = Event(interval.first);
-      if (events.back() != first)
-        events.push_back(first);
-      events.push_back(Event(interval.second));
+  for (auto &[key, val] : _E) {
+    for (auto itv : val) {
+      events.push_back(Event(itv.first));
+      events.push_back(Event(itv.second));
     }
   }
   std::sort(events.begin(), events.end(), eventComp);
@@ -45,10 +42,10 @@ void tempoNetwork::initTimeEvents() {
   nodeEvents.assign(events.size(), {});
   for (int u = 0; u < _W.size(); u++) {
     int t = 0;
-    for (auto interval : _W[u]) {
-      while (events[t].val() < interval.first)
+    for (auto itv : _W[u]) {
+      while (events[t].val() < itv.first)
         t++;
-      while (events[t + 1].val() <= interval.second) {
+      while (events[t + 1].val() <= itv.second) {
         nodeEvents[t].push_back(u);
         t++;
       }
@@ -56,13 +53,13 @@ void tempoNetwork::initTimeEvents() {
   }
   std::vector<std::vector<std::pair<int, int>>> edgeEvents;
   edgeEvents.assign(events.size(), {});
-  for (auto &it : _E) {
+  for (auto &[key, val] : _E) {
     int t = 0;
-    for (auto interval : it.second) {
-      while (events[t] < interval.first)
+    for (auto itv : val) {
+      while (events[t] < itv.first)
         t++;
-      while (events[t + 1] <= interval.second) {
-        edgeEvents[t].push_back(strToPair(it.first));
+      while (events[t + 1] <= itv.second) {
+        edgeEvents[t].push_back(strToPair(key));
         t++;
       }
     }
@@ -83,13 +80,13 @@ int tempoNetwork::timeToEventId(float t) {
 }
 
 bool tempoNetwork::checkNodePres(int u, float t) {
-  TIntervals intervals = getTIntervals(u);
-  return timeValid(intervals, t);
+  TimeItvs itvs = getTimeItvs(u);
+  return timeValid(itvs, t);
 }
 
 bool tempoNetwork::checkEdgePres(int u, int v, float t) {
-  TIntervals intervals = getTIntervals(u, v);
-  return timeValid(intervals, t);
+  TimeItvs itvs = getTimeItvs(u, v);
+  return timeValid(itvs, t);
 }
 
 bool tempoNetwork::checkEdgeAtEvent(int u, int v, int event) {
@@ -115,17 +112,17 @@ int tempoNetwork::getNodeVanishEventId(int u, int k) {
 }
 
 float tempoNetwork::getNodeVanishT(int u, float t) {
-  for (auto interval : _W[u]) {
-    if (interval.first <= t && interval.second > t)
-      return interval.second;
+  for (auto itv : _W[u]) {
+    if (itv.first <= t && itv.second > t)
+      return itv.second;
   }
   return t;
 }
 
 float tempoNetwork::getNodeAppearT(int u, float t) {
-  for (auto interval : _W[u]) {
-    if (interval.first <= t && interval.second > t)
-      return interval.first;
+  for (auto itv : _W[u]) {
+    if (itv.first <= t && itv.second > t)
+      return itv.first;
   }
   return t;
 }
@@ -188,45 +185,66 @@ DTNode tempoNetwork::getRdLocation(DTNode prevLoc) {
   return {u, s};
 }
 
-bool timeValid(TIntervals intervals, float t) {
-  for (auto interval : intervals) {
-    if (interval.first <= t && interval.second >= t) {
+bool timeValid(TimeItvs itvs, float t) {
+  for (auto itv : itvs) {
+    if (itv.first <= t && itv.second >= t) {
       return true;
     }
   }
   return false;
 }
 
-TIntervals fillIntervals(float tEnd, float tStart, float p, std::mt19937 &gen,
-                         std::normal_distribution<> &normalDis,
-                         std::uniform_real_distribution<> &dis) {
-  TIntervals res = {};
-  int k = static_cast<int>(std::round(normalDis(gen)));
-  float subIntervalSize = (tEnd - tStart) / k;
-  std::pair<float, float> interval = {tStart, tStart};
-  bool present = dis(gen) <= p;
-  for (int i = 1; i < k; i++) {
-    float t = tStart + i * subIntervalSize;
-    interval.second = t;
-    if (dis(gen) <= p) {
-      if (not present) {
-        res.push_back(interval);
-        interval.first = t;
-        present = true;
-      }
-    } else {
-      if (present) {
-        res.push_back(interval);
-        interval.first = t;
-        present = false;
-      }
-    }
+TimeItvs fillItvs(float tEnd, float tStart, std::mt19937 &gen,
+                  std::normal_distribution<> &normalDis,
+                  std::uniform_real_distribution<> &dis) {
+  int k = std::abs(static_cast<int>(std::round(normalDis(gen))));
+  std::vector<float> tab;
+  for (int i = 0; i < 2 * k; i++) {
+    tab.push_back(tStart + dis(gen) * (tEnd - tStart));
+  }
+  std::sort(tab.begin(), tab.end());
+  TimeItvs res;
+  for (int j = 0; j < k; j++) {
+    res.push_back({tab[j * 2], tab[j * 2 + 1]});
   }
   return res;
 }
 
-tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd, float p1,
-                                float p2, float p3) {
+TimeItvs itvsInter(TimeItvs itvU, TimeItvs itvV) {
+  int idU = 0;
+  int idV = 0;
+  TimeItvs inter;
+  while (idU < itvU.size() && idV < itvV.size()) {
+    if (itvU[idU].first <= itvV[idV].first) {
+      if (itvU[idU].second <= itvV[idV].first) {
+        idU++;
+      } else {
+        if (itvU[idU].second <= itvV[idV].second) {
+          inter.push_back({itvV[idV].first, itvU[idU].second});
+          idU++;
+        } else {
+          inter.push_back({itvV[idV].first, itvV[idV].second});
+          idV++;
+        }
+      }
+    } else {
+      if (itvV[idV].second <= itvU[idU].first) {
+        idV++;
+      } else {
+        if (itvV[idV].second <= itvU[idU].second) {
+          inter.push_back({itvU[idU].first, itvV[idV].second});
+          idV++;
+        } else {
+          inter.push_back({itvU[idU].first, itvU[idU].second});
+          idU++;
+        }
+      }
+    }
+  }
+  return inter;
+}
+
+tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd, float p1) {
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> dis(0.0, 1.0);
@@ -239,24 +257,47 @@ tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd, float p1,
         edges.push_back({i, j});
     }
   }
-  std::vector<TIntervals> W;
+  std::vector<TimeItvs> W;
   // using p2 to determine the presence of a node
   // define a random generator following a gaussian law centered on tEnd -
   // tStart
-  std::normal_distribution<> normalDis(tEnd - tStart, (tEnd - tStart) / 4.);
+  std::normal_distribution<> normalDisNode(1, 1);
   for (int u = 0; u < n; u++) {
-    TIntervals currentIntervals =
-        fillIntervals(tEnd, tStart, p2, gen, normalDis, dis);
-    W.push_back(currentIntervals);
+    TimeItvs currenTimeItvs = fillItvs(tEnd, tStart, gen, normalDisNode, dis);
+    W.push_back(currenTimeItvs);
   }
-  std::unordered_map<std::string, TIntervals> E;
+  int u = 0;
+  for (auto nodeItvs : W) {
+    std::cout << "Node " << u << ": ";
+    for (auto itv : nodeItvs) {
+      std::cout << "[" << itv.first << ", " << itv.second << "], ";
+    }
+    std::cout << std::endl;
+    u++;
+  }
+  std::unordered_map<std::string, TimeItvs> E;
+  std::normal_distribution<> normalDisEdge(1, 0.1);
   // using p3 to determine the presence of an edge
   for (auto uv : edges) {
-    TIntervals currentIntervals =
-        fillIntervals(tEnd, tStart, p3, gen, normalDis, dis);
-    E[pairToStr(uv)] = currentIntervals;
+    TimeItvs nodeInter = itvsInter(W[uv.first], W[uv.second]);
+    TimeItvs edgeItvs;
+    for (auto interItv : nodeInter) {
+      TimeItvs subEdgeItvs =
+          fillItvs(interItv.second, interItv.first, gen, normalDisEdge, dis);
+      for (auto edgeItv : subEdgeItvs)
+        edgeItvs.push_back(edgeItv);
+    }
+    E[pairToStr(uv)] = edgeItvs;
   }
   tempoNetwork net = tempoNetwork(tStart, tEnd, n, W, E);
+
+  for (auto &[key, value] : E) {
+    std::cout << "Edge " << key << ": ";
+    for (auto itv : value) {
+      std::cout << "[" << itv.first << ", " << itv.second << "], ";
+    }
+    std::cout << std::endl;
+  }
   net.initTimeEvents();
   return net;
 }

@@ -25,7 +25,7 @@ tempoNetwork readStreamFile(const std::string &filename) {
   file >> n;
 
   // Read the next n lines into W
-  std::vector<TIntervals> W;
+  std::vector<TimeItvs> W;
   W.assign(n, {});
   for (int i = 0; i < n; ++i) {
     int nodeId;
@@ -42,14 +42,14 @@ tempoNetwork readStreamFile(const std::string &filename) {
   }
 
   // Read the remaining lines into E
-  std::unordered_map<std::string, TIntervals> E;
+  std::unordered_map<std::string, TimeItvs> E;
   std::string line;
   while (std::getline(file, line)) {
     std::istringstream iss(line);
     int nodeId1, nodeId2;
     iss >> nodeId1 >> nodeId2;
 
-    TIntervals intervals;
+    TimeItvs intervals;
     float value1, value2;
 
     while (iss >> value1 >> value2) {

@@ -37,56 +37,54 @@
 // Network net2(xadj2, adj2, adjWt2);
 
 int main(int argc, char *argv[]) {
-  if (argc != 5 && argc != 9)
-    throw std::invalid_argument("exec file must be called with arguments: "
-                                "nbVertices nbWalkers probaEdge nbSteps");
 
-  int nbVertices = std::atoi(argv[1]);  // 100;
-  int nbWalkers = std::atoi(argv[2]);   // 1000;
-  float probaEdge = std::atof(argv[3]); // 0.5;
-  int nbSteps = std::atoi(argv[4]);     // 50;
+  int n = 10;
+  int nbWalkers = 10000;
+  float p1 = 0.2;
+  int nbSteps = 100;
+  float tStart = 0.;
+  float tEnd = 10.;
+  // float p2 = 0.75;
+  // float p3 = 0.9;
 
-  float tStart, tEnd, p2, p3;
-  if (argc == 9) {
-    tStart = std::atof(argv[5]);
-    tEnd = std::atof(argv[6]);
-    p2 = std::atof(argv[7]);
-    p3 = std::atof(argv[8]);
-  }
-
-  std::cout << nbVertices << " " << nbWalkers << " " << probaEdge << " "
-            << nbSteps << std::endl;
-  if (argc == 9)
-    std::cout << tStart << " " << tEnd << " " << p2 << " " << p3 << std::endl;
+  std::cout << "Graph parameters:" << std::endl;
+  std::cout << "n: " << n << ", P(edge): " << p1;
+  std::cout << ", t_start: " << tStart << ", t_end: " << tEnd << std::endl;
+  // std::cout << "Avg node filling: " << p2 << ", Avg edge filling: " << p3
+  // << std::endl;
+  std::cout << "Random Walk parameters:" << std::endl;
+  std::cout << "nb walkers: " << nbWalkers << ", nb steps:" << nbSteps
+            << std::endl;
   float eps = 0.00001;
-  float alpha = 0;
+  float alpha = 0.85;
 
-  Network net = randomErdosRenyiNetwork(nbVertices, probaEdge);
+  // Static network generation + pr sim
+  // Network net = randomErdosRenyiNetwork(nbVertices, probaEdge);
   // net.display();
-  net.checkConsistency();
-
-  std::vector<std::vector<int>> rdWalk =
-      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net);
+  // net.checkConsistency();
+  // std::vector<std::vector<int>> rdWalk =
+  //     randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net);
   // displayResults(rdWalk, net.size());
 
-  int k = rdWalk[0].size() - 1;
-  std::vector<float> res = walkersDistribution(rdWalk, k, net.size());
+  // int k = rdWalk[0].size() - 1;
+  // std::vector<float> res = walkersDistribution(rdWalk, k, net.size());
 
-  // tempoNetwork tnet =
-  //     randomTempoNetwork(nbVertices, tStart, tEnd, probaEdge, p2, p3);
+  // Temporal network generation
+  tempoNetwork tnet = randomTempoNetwork(n, tStart, tEnd, p1); //, p2, p3);
   // std::vector<std::vector<int>> tres = randomWalkSimulation();
 
-  std::vector<float> pValues(net.size(), 1. / net.size());
-  Matrix p(pValues, {1, net.size()});
-  std::pair<Matrix, Matrix> ha = networkToPagerakMatrices(net);
-  Matrix pr = pwrPagerank(ha.first, ha.second, alpha, p, nbSteps, eps);
+  // Pagerank computation
+  // std::vector<float> pValues(net.size(), 1. / net.size());
+  // Matrix p(pValues, {1, net.size()});
+  // std::pair<Matrix, Matrix> ha = networkToPagerakMatrices(net);
+  // Matrix pr = pwrPagerank(ha.first, ha.second, alpha, p, nbSteps, eps);
   // std::cout << "Pagerank:" << std::endl;
   // pr.print();
 
-  std::cout << "Difference:" << std::endl;
-  std::vector<float> diff;
-  for (int i = 0; i < pr.dim().second; i++)
-    diff.push_back(std::abs(pr(0, i) - res[i]));
-  std::cout << accumulate(diff.begin(), diff.end(), 0.);
+  // std::cout << "Difference:" << std::endl;
+  // std::vector<float> diff;
+  // for (int i = 0; i < pr.dim().second; i++)
+  //   diff.push_back(std::abs(pr(0, i) - res[i]));
+  // std::cout << accumulate(diff.begin(), diff.end(), 0.);
   return 0;
 }

@@ -9,22 +9,22 @@
 #include <utility>
 #include <vector>
 
-typedef std::vector<std::pair<float, float>> TIntervals;
+typedef std::vector<std::pair<float, float>> TimeItvs;
 typedef std::pair<int, int> DTNode;
 typedef std::unordered_map<int, std::vector<std::pair<int, int>>>
     FNeighbourhood;
 
 class tempoNetwork {
 public:
-  tempoNetwork(float tStart, float tEnd, int n, std::vector<TIntervals> W,
-               std::unordered_map<std::string, TIntervals> E)
+  tempoNetwork(float tStart, float tEnd, int n, std::vector<TimeItvs> W,
+               std::unordered_map<std::string, TimeItvs> E)
       : _tStart(tStart), _tEnd(tEnd), _n(n), _W(W), _E(E),
         _timeAspectSet(false) {}
   float startTime() { return _tStart; }
   float endTime() { return _tEnd; }
   int size() { return _n; }
-  TIntervals getTIntervals(int u) { return _W[u]; }
-  TIntervals getTIntervals(int u, int v);
+  TimeItvs getTimeItvs(int u) { return _W[u]; }
+  TimeItvs getTimeItvs(int u, int v);
   bool isTimeSet() { return _timeAspectSet; }
   float getEventVal(int eventId) { return _events[eventId].val(); }
 
@@ -66,8 +66,8 @@ private:
   float _tStart;
   float _tEnd;
   int _n;
-  std::vector<TIntervals> _W;
-  std::unordered_map<std::string, TIntervals> _E;
+  std::vector<TimeItvs> _W;
+  std::unordered_map<std::string, TimeItvs> _E;
 
   bool _timeAspectSet;
   std::vector<Event> _events;
@@ -91,8 +91,8 @@ public:
 /**
  * Checks if the time given as parameter lies in one of the intervals
  */
-bool timeValid(TIntervals, float t);
-tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd, float p1,
-                                float p2, float p3);
+bool timeValid(TimeItvs, float t);
+tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd,
+                                float p1); //, float p2, float p3);
 
 #endif // TEMPORALNETWORK_HPP

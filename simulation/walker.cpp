@@ -1,6 +1,5 @@
 #include "include/walker.hpp"
 #include "include/integral.hpp"
-#include <iostream>
 #include <random>
 #include <utility>
 #include <vector>
