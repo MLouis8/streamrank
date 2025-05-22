@@ -1,20 +1,23 @@
 #include "include/temporalNetwork.hpp"
+#include "include/bipartite.hpp"
 #include "include/network.hpp"
 #include "include/strHandler.hpp"
 
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <numeric>
 #include <random>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-tempoNetwork::tempoNetwork(Network aglo, vector<int> timeS) {
-  randomGeneration(aglo, timeS);
+tempoNetwork::tempoNetwork(Network aglo, vector<int> nodeTimeS,
+                           vector<int> edgeTimeS) {
+  rdTNet(aglo, nodeTimeS, edgeTimeS);
   genRdTimes();
 }
 
@@ -38,7 +41,7 @@ TimeItvs tempoNetwork::getTimeItvs(int u, int v) {
 }
 
 void tempoNetwork::initTimeEvents() {
-  std::vector<Event> events = {Event(_tStart)};
+  vector<Event> events = {Event(_tStart)};
   for (auto itvs : _W) {
     for (auto itv : itvs) {
       events.push_back(Event(itv.first));
@@ -51,10 +54,10 @@ void tempoNetwork::initTimeEvents() {
       events.push_back(Event(itv.second));
     }
   }
-  std::sort(events.begin(), events.end(), eventComp);
+  sort(events.begin(), events.end(), eventComp);
   events.push_back(Event(_tEnd));
   events.erase(unique(events.begin(), events.end()), events.end());
-  std::vector<std::vector<int>> nodeEvents;
+  vector<vector<int>> nodeEvents;
   nodeEvents.assign(events.size(), {});
   for (int u = 0; u < _W.size(); u++) {
     int t = 0;
@@ -67,7 +70,7 @@ void tempoNetwork::initTimeEvents() {
       }
     }
   }
-  std::vector<std::vector<std::pair<int, int>>> edgeEvents;
+  vector<vector<pair<int, int>>> edgeEvents;
   edgeEvents.assign(events.size(), {});
   for (auto &[key, val] : _E) {
     int t = 0;
@@ -114,7 +117,7 @@ bool tempoNetwork::checkEdgeAtEvent(int u, int v, int event) {
 }
 
 int tempoNetwork::getNodeVanishEventId(int u, int k) {
-  while (std::find(_nodeEvents[k].begin(), _nodeEvents[k].end(), u) !=
+  while (find(_nodeEvents[k].begin(), _nodeEvents[k].end(), u) !=
          _nodeEvents[k].end())
     k++;
   return k;
@@ -136,8 +139,8 @@ float tempoNetwork::getNodeAppearT(int u, float t) {
   return t;
 }
 
-std::vector<int> tempoNetwork::getInstantEventNeighbours(int u, int eventId) {
-  std::vector<int> instantNeighbours;
+vector<int> tempoNetwork::getInstantEventNeighbours(int u, int eventId) {
+  vector<int> instantNeighbours;
   for (auto edge : _edgeEvents[eventId]) {
     if (edge.first == u)
       instantNeighbours.push_back(edge.second);
@@ -147,7 +150,7 @@ std::vector<int> tempoNetwork::getInstantEventNeighbours(int u, int eventId) {
   return instantNeighbours;
 }
 
-std::vector<int> tempoNetwork::getInstantNeighbours(int u, float t) {
+vector<int> tempoNetwork::getInstantNeighbours(int u, float t) {
   return getInstantEventNeighbours(u, timeToEventId(t));
 }
 
@@ -171,17 +174,17 @@ FNeighbourhood tempoNetwork::getFutureNeighbours(int u, int idEvent) {
 }
 
 DTNode tempoNetwork::getRdLocation(DTNode prevLoc) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::vector<int> w;
+  random_device rd;
+  mt19937 gen(rd());
+  vector<int> w;
   for (auto nodeEvent : _nodeEvents) {
     w.push_back(nodeEvent.size());
   }
-  std::discrete_distribution<> dis1(w.begin(), w.end());
+  discrete_distribution<> dis1(w.begin(), w.end());
   int s = dis1(gen);
   while (s == prevLoc.second)
     s = dis1(gen);
-  std::uniform_int_distribution<> dis2(0, _nodeEvents[s].size() - 1);
+  uniform_int_distribution<> dis2(0, _nodeEvents[s].size() - 1);
   int u = dis2(gen);
   while (u == prevLoc.first)
     u = dis2(gen);
@@ -195,22 +198,6 @@ bool timeValid(TimeItvs itvs, float t) {
     }
   }
   return false;
-}
-
-TimeItvs fillItvs(float tEnd, float tStart, std::mt19937 &gen,
-                  std::normal_distribution<> &normalDis,
-                  std::uniform_real_distribution<> &dis) {
-  int k = std::abs(static_cast<int>(std::round(normalDis(gen))));
-  std::vector<float> tab;
-  for (int i = 0; i < 2 * k; i++) {
-    tab.push_back(tStart + dis(gen) * (tEnd - tStart));
-  }
-  std::sort(tab.begin(), tab.end());
-  TimeItvs res;
-  for (int j = 0; j < k; j++) {
-    res.push_back({tab[j * 2], tab[j * 2 + 1]});
-  }
-  return res;
 }
 
 TimeItvs itvsInter(TimeItvs itvU, TimeItvs itvV) {
@@ -247,60 +234,37 @@ TimeItvs itvsInter(TimeItvs itvU, TimeItvs itvV) {
   return inter;
 }
 
-tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd, float p1) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_real_distribution<> dis(0.0, 1.0);
-
-  std::vector<std::pair<int, int>> edges;
-  // using p1 to determine if an edge is between two nodes
-  for (int i = 0; i < n; i++) {
-    for (int j = i + 1; j < n; j++) {
-      if (dis(gen) <= p1)
-        edges.push_back({i, j});
-    }
+void tempoNetwork::rdTNet(Network aglo, vector<int> nodeTimeS,
+                          vector<int> edgeTimeS) {
+  // Generate nodes and edges events
+  vector<int> nodeAglo = aglo.nodeWeight();
+  vector<int> edgeAglo = aglo.adjacencyWeight();
+  int sumDegreesN = accumulate(nodeAglo.begin(), nodeAglo.end(), 0);
+  int sumDegreesE = accumulate(edgeAglo.begin(), edgeAglo.end(), 0);
+  if (accumulate(nodeTimeS.begin(), nodeTimeS.end(), 0) != sumDegreesN)
+    throw invalid_argument("the sum of the aglomerated graph node weights must "
+                           "be the same to the sum of the node time serie.");
+  if (accumulate(edgeTimeS.begin(), edgeTimeS.end(), 0) != sumDegreesE)
+    throw invalid_argument("the sum of the aglomerated graph edge weights must "
+                           "be the same to the sum of the edge time serie.");
+  Bipartite tNodes = rdBipartiteFromDegrees(nodeAglo, nodeTimeS);
+  Bipartite tEdges = rdBipartiteFromDegrees(edgeAglo, edgeTimeS);
+  _n = nodeTimeS.size();
+  vector<vector<int>> nodeEvents(nodeTimeS.size(), {-1});
+  for (auto e : tNodes) {
+    if (nodeEvents[e.second][0] == -1)
+      nodeEvents[e.second][0] = e.first;
+    else
+      nodeEvents[e.second].push_back(e.first);
   }
-  std::vector<TimeItvs> W;
-  // using p2 to determine the presence of a node
-  // define a random generator following a gaussian law centered on tEnd -
-  // tStart
-  std::normal_distribution<> normalDisNode(1, 1);
-  for (int u = 0; u < n; u++) {
-    TimeItvs currenTimeItvs = fillItvs(tEnd, tStart, gen, normalDisNode, dis);
-    W.push_back(currenTimeItvs);
+  _nodeEvents = nodeEvents;
+  vector<vector<pair<int, int>>> edgeEvents(edgeTimeS.size(), {{-1, -1}});
+  for (auto e : tEdges) {
+    pair<int, int> edge = aglo.getEdge(e.first);
+    if (edgeEvents[e.second][0].first == -1)
+      edgeEvents[e.second][0] = edge;
+    else
+      edgeEvents[e.second].push_back(edge);
   }
-  int u = 0;
-  for (auto nodeItvs : W) {
-    std::cout << "Node " << u << ": ";
-    for (auto itv : nodeItvs) {
-      std::cout << "[" << itv.first << ", " << itv.second << "], ";
-    }
-    std::cout << std::endl;
-    u++;
-  }
-  std::unordered_map<std::string, TimeItvs> E;
-  std::normal_distribution<> normalDisEdge(1, 0.1);
-  // using p3 to determine the presence of an edge
-  for (auto uv : edges) {
-    TimeItvs nodeInter = itvsInter(W[uv.first], W[uv.second]);
-    TimeItvs edgeItvs;
-    for (auto interItv : nodeInter) {
-      TimeItvs subEdgeItvs =
-          fillItvs(interItv.second, interItv.first, gen, normalDisEdge, dis);
-      for (auto edgeItv : subEdgeItvs)
-        edgeItvs.push_back(edgeItv);
-    }
-    E[pairToStr(uv)] = edgeItvs;
-  }
-  tempoNetwork net = tempoNetwork(tStart, tEnd, n, W, E);
-
-  for (auto &[key, value] : E) {
-    std::cout << "Edge " << key << ": ";
-    for (auto itv : value) {
-      std::cout << "[" << itv.first << ", " << itv.second << "], ";
-    }
-    std::cout << std::endl;
-  }
-  net.initTimeEvents();
-  return net;
+  _edgeEvents = edgeEvents;
 }

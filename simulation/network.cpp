@@ -1,10 +1,12 @@
 #include "include/network.hpp"
+#include "include/temporalNetwork.hpp"
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <map>
 #include <ostream>
 #include <random>
+#include <utility>
 #include <vector>
 
 Network::Network(int n, float p) {
@@ -24,6 +26,18 @@ vector<float> Network::neighboursWeights(int u) {
   for (int i = _xadjacency[u]; i < _xadjacency[u + 1]; i++)
     weights.push_back(_adjacencyWeight[i]);
   return weights;
+}
+
+pair<int, int> Network::getEdge(int uv) {
+  int v = _adjacency[uv];
+  int u = 0;
+  for (int cumulDeg : _xadjacency) {
+    if (cumulDeg > uv) {
+      return {u - 1, v};
+    }
+    u++;
+  }
+  return {u - 1, v};
 }
 
 int Network::getRdLocation(int u) {

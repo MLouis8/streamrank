@@ -10,15 +10,13 @@
 #include <utility>
 #include <vector>
 
-using namespace std;
-
 typedef vector<pair<float, float>> TimeItvs;
 typedef pair<int, int> DTNode;
 typedef unordered_map<int, vector<pair<int, int>>> FNeighbourhood;
 
 class tempoNetwork {
 public:
-  tempoNetwork(Network aglo, vector<int> timeS);
+  tempoNetwork(Network aglo, vector<int> nodeTimeS, vector<int> edgeTimeS);
   tempoNetwork(float tStart, float tEnd, int n, vector<TimeItvs> W,
                unordered_map<string, TimeItvs> E);
   float startTime() { return _tStart; }
@@ -33,7 +31,7 @@ public:
    * serie using the bijection between the two parameters and a stream graph and
    * using the bijection between the two parameters and a bipartite graph
    */
-  void randomGeneration(Network aglo, vector<int> timeS);
+  void rdTNet(Network aglo, vector<int> nodeTimeS, vector<int> edgeTimeS);
   void genRdTimes();
 
   /**

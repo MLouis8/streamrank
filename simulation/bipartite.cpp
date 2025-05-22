@@ -1,4 +1,4 @@
-#include "include/randomBipartite.hpp"
+#include "include/bipartite.hpp"
 #include <numeric>
 #include <random>
 #include <vector>
@@ -21,7 +21,7 @@ vector<int> rdPerm(int n) {
   return res;
 }
 
-BipartiteGraph rdBipartiteFromDegrees(vector<int> upDeg, vector<int> downDeg) {
+Bipartite rdBipartiteFromDegrees(vector<int> upDeg, vector<int> downDeg) {
   int sumDeg = accumulate(upDeg.begin(), upDeg.end(), 0);
   vector<int> perm = rdPerm(sumDeg);
   vector<vector<int>> up, down;

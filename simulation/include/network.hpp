@@ -1,6 +1,7 @@
 #ifndef NETWORK_HPP
 #define NETWORK_HPP
 
+#include <utility>
 #include <vector>
 
 using namespace std;
@@ -18,6 +19,7 @@ public:
   vector<int> xAdjacency() { return _xadjacency; }
   vector<int> adjacencyWeight() { return _adjacencyWeight; }
   vector<int> adjacency() { return _adjacency; }
+  vector<int> nodeWeight() { return _nodeWeight; }
   int size() { return _n; }
   int nbEdges() { return _adjacencyWeight.size(); }
 
@@ -25,6 +27,7 @@ public:
 
   vector<int> neighbours(int u);
   vector<float> neighboursWeights(int u);
+  pair<int, int> getEdge(int uv);
   int getRdLocation(int u);
   void display();
   void checkConsistency();

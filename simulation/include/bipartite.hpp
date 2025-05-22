@@ -6,10 +6,10 @@
 
 using namespace std;
 
-typedef pair<vector<vector<int>>, vector<vector<int>>> BipartiteGraph;
+typedef vector<pair<int, int>> Bipartite;
 
 vector<int> rdPerm(int n);
 
-BipartiteGraph rdBipartiteFromDegrees(vector<int> upDeg, vector<int> downDeg);
+Bipartite rdBipartiteFromDegrees(vector<int> upDeg, vector<int> downDeg);
 
 #endif // RANDOMBIPARTITE_HPP
