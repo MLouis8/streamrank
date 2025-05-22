@@ -1,12 +1,11 @@
 #include "include/temporalNetwork.hpp"
 #include "include/bipartite.hpp"
+#include "include/event.hpp"
 #include "include/network.hpp"
 #include "include/strHandler.hpp"
 
 #include <algorithm>
-#include <cmath>
-#include <ctime>
-#include <iostream>
+#include <cassert>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -16,9 +15,10 @@
 #include <vector>
 
 tempoNetwork::tempoNetwork(Network aglo, vector<int> nodeTimeS,
-                           vector<int> edgeTimeS) {
+                           vector<int> edgeTimeS, float tStart, float tEnd) {
+  assert(nodeTimeS.size() == edgeTimeS.size());
   rdTNet(aglo, nodeTimeS, edgeTimeS);
-  genRdTimes();
+  genRdTimes(nodeTimeS.size(), tStart, tEnd);
 }
 
 tempoNetwork::tempoNetwork(float tStart, float tEnd, int n, vector<TimeItvs> W,
@@ -250,21 +250,32 @@ void tempoNetwork::rdTNet(Network aglo, vector<int> nodeTimeS,
   Bipartite tNodes = rdBipartiteFromDegrees(nodeAglo, nodeTimeS);
   Bipartite tEdges = rdBipartiteFromDegrees(edgeAglo, edgeTimeS);
   _n = nodeTimeS.size();
-  vector<vector<int>> nodeEvents(nodeTimeS.size(), {-1});
+  vector<vector<int>> nodeEvents(nodeTimeS.size());
   for (auto e : tNodes) {
-    if (nodeEvents[e.second][0] == -1)
-      nodeEvents[e.second][0] = e.first;
-    else
-      nodeEvents[e.second].push_back(e.first);
+    nodeEvents[e.second].push_back(e.first);
   }
   _nodeEvents = nodeEvents;
-  vector<vector<pair<int, int>>> edgeEvents(edgeTimeS.size(), {{-1, -1}});
+  vector<vector<pair<int, int>>> edgeEvents(edgeTimeS.size());
   for (auto e : tEdges) {
     pair<int, int> edge = aglo.getEdge(e.first);
-    if (edgeEvents[e.second][0].first == -1)
-      edgeEvents[e.second][0] = edge;
-    else
-      edgeEvents[e.second].push_back(edge);
+    edgeEvents[e.second].push_back(edge);
   }
   _edgeEvents = edgeEvents;
+}
+
+void tempoNetwork::genRdTimes(int nbEvents, float tStart, float tEnd) {
+  _tStart = tStart;
+  _tEnd = tEnd;
+  random_device rd;
+  mt19937 gen(rd());
+  uniform_real_distribution<> dis(_tStart, _tEnd);
+  vector<float> times;
+  for (int i = 0; i < nbEvents; i++) {
+    times.push_back(dis(gen));
+  }
+  sort(times.begin(), times.end());
+  vector<Event> events;
+  for (auto time : times)
+    events.push_back(Event(time));
+  _events = events;
 }

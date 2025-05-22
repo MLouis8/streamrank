@@ -4,7 +4,6 @@
 #include "event.hpp"
 #include "network.hpp"
 
-#include <cmath>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -16,7 +15,8 @@ typedef unordered_map<int, vector<pair<int, int>>> FNeighbourhood;
 
 class tempoNetwork {
 public:
-  tempoNetwork(Network aglo, vector<int> nodeTimeS, vector<int> edgeTimeS);
+  tempoNetwork(Network aglo, vector<int> nodeTimeS, vector<int> edgeTimeS,
+               float tStart, float tEnd);
   tempoNetwork(float tStart, float tEnd, int n, vector<TimeItvs> W,
                unordered_map<string, TimeItvs> E);
   float startTime() { return _tStart; }
@@ -32,7 +32,7 @@ public:
    * using the bijection between the two parameters and a bipartite graph
    */
   void rdTNet(Network aglo, vector<int> nodeTimeS, vector<int> edgeTimeS);
-  void genRdTimes();
+  void genRdTimes(int nbEvents, float tStart, float tEnd);
 
   /**
    * Instantiate tempoNetwork class attributes linked to time: _events,
