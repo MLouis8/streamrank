@@ -1,4 +1,5 @@
 #include "include/bipartite.hpp"
+#include <algorithm>
 #include <numeric>
 #include <random>
 #include <vector>
@@ -24,9 +25,21 @@ vector<int> rdPerm(int n) {
 Bipartite rdBipartiteFromDegrees(vector<int> upDeg, vector<int> downDeg) {
   int sumDeg = accumulate(upDeg.begin(), upDeg.end(), 0);
   vector<int> perm = rdPerm(sumDeg);
-  vector<vector<int>> up, down;
-  for (int i = 0; i < perm.size(); i++) {
-    up[i] = perm[i];
+  vector<int> upDegToNode;
+  for (int u = 0; u < upDeg.size(); u++) {
+    for (int i = 0; i < upDeg[u]; i++)
+      upDegToNode.push_back(u);
   }
-  return {up, down};
+  vector<int> downDegToNode;
+  for (int v = 0; v < downDeg.size(); v++) {
+    for (int i = 0; i < downDeg[v]; i++)
+      downDegToNode.push_back(v);
+  }
+  Bipartite res;
+  for (int p = 0; p < perm.size(); p++) {
+    res.push_back({upDegToNode[p], downDegToNode[perm[p]]});
+  }
+  sort(res.begin(), res.end());
+  res.erase(unique(res.begin(), res.end()), res.end());
+  return res;
 }
