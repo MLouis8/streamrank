@@ -33,25 +33,30 @@ randomWalkSimulation(int nbWalkers, int nbSteps, float eps, float alpha,
   std::vector<std::vector<DTNode>> walkersPositions;
   std::vector<Walker<DTNode>> walkersList;
   for (int i = 0; i < nbWalkers; i++) {
-    DTNode startingPosition = tnet.getRdLocation({-1, 0});
+    DTNode startingPosition = {-1, 0}; // tnet.getRdLocation({-1, 0});
     walkersPositions.push_back({startingPosition});
     walkersList.push_back(Walker<DTNode>(i, startingPosition));
   }
+
   for (int s = 1; s < nbSteps; s++) {
     for (int i = 0; i < nbWalkers; i++) {
       DTNode newLoc;
       switch (stepType) {
       // case 0: // DTRW
       //   newLoc = walkersList[i].step(tnet, alpha);
-      case 1: // approx
-        newLoc = walkersList[i].approxStep(tnet, alpha, h);
+      case 1:            // approx
+        newLoc = {1, 1}; // walkersList[i].approxStep(tnet, alpha, h);
+        break;
       case 2: // upper bound
         newLoc = walkersList[i].upperBound(tnet, alpha, h);
+        break;
       case 3: // lower bound
         newLoc = walkersList[i].lowerBound(tnet, alpha, h);
+        break;
       default: // approx
         newLoc = walkersList[i].approxStep(tnet, alpha, h);
-      }
+        break;
+      };
       walkersPositions[i].push_back(newLoc);
     }
   }

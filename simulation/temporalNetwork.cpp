@@ -1,4 +1,5 @@
 #include "include/temporalNetwork.hpp"
+#include "include/network.hpp"
 #include "include/strHandler.hpp"
 
 #include <algorithm>
@@ -11,6 +12,21 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+tempoNetwork::tempoNetwork(Network aglo, vector<int> timeS) {
+  randomGeneration(aglo, timeS);
+  genRdTimes();
+}
+
+tempoNetwork::tempoNetwork(float tStart, float tEnd, int n, vector<TimeItvs> W,
+                           unordered_map<string, TimeItvs> E) {
+  _tStart = tStart;
+  _tEnd = tEnd;
+  _n = n;
+  _W = W;
+  _E = E;
+  initTimeEvents();
+}
 
 TimeItvs tempoNetwork::getTimeItvs(int u, int v) {
   auto it = _E.find(pairToStr({u, v}));
@@ -67,7 +83,6 @@ void tempoNetwork::initTimeEvents() {
   _edgeEvents = edgeEvents;
   _nodeEvents = nodeEvents;
   _events = events;
-  _timeAspectSet = true;
 }
 
 int tempoNetwork::timeToEventId(float t) {
@@ -90,9 +105,6 @@ bool tempoNetwork::checkEdgePres(int u, int v, float t) {
 }
 
 bool tempoNetwork::checkEdgeAtEvent(int u, int v, int event) {
-  if (not isTimeSet())
-    throw missing_temporal_init(
-        "must first initialise time events, see initTimeEvents().");
   for (auto edge : _edgeEvents[event]) {
     if ((edge.first == u && edge.second == v) ||
         (edge.first == v && edge.second == u))
@@ -102,9 +114,6 @@ bool tempoNetwork::checkEdgeAtEvent(int u, int v, int event) {
 }
 
 int tempoNetwork::getNodeVanishEventId(int u, int k) {
-  if (not isTimeSet())
-    throw missing_temporal_init(
-        "must first initialise time events, see initTimeEvents().");
   while (std::find(_nodeEvents[k].begin(), _nodeEvents[k].end(), u) !=
          _nodeEvents[k].end())
     k++;
@@ -128,9 +137,6 @@ float tempoNetwork::getNodeAppearT(int u, float t) {
 }
 
 std::vector<int> tempoNetwork::getInstantEventNeighbours(int u, int eventId) {
-  if (not isTimeSet())
-    throw missing_temporal_init(
-        "must first initialise time events, see initTimeEvents().");
   std::vector<int> instantNeighbours;
   for (auto edge : _edgeEvents[eventId]) {
     if (edge.first == u)
@@ -146,9 +152,6 @@ std::vector<int> tempoNetwork::getInstantNeighbours(int u, float t) {
 }
 
 FNeighbourhood tempoNetwork::getFutureNeighbours(int u, int idEvent) {
-  if (not isTimeSet())
-    throw missing_temporal_init(
-        "must first initialise time events, see initTimeEvents().");
   int vanishId = getNodeVanishEventId(u, idEvent);
   FNeighbourhood res;
   for (int i = idEvent; i < vanishId; i++) {

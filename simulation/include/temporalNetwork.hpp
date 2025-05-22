@@ -2,6 +2,7 @@
 #define TEMPORALNETWORK_HPP
 
 #include "event.hpp"
+#include "network.hpp"
 
 #include <cmath>
 #include <string>
@@ -9,29 +10,37 @@
 #include <utility>
 #include <vector>
 
-typedef std::vector<std::pair<float, float>> TimeItvs;
-typedef std::pair<int, int> DTNode;
-typedef std::unordered_map<int, std::vector<std::pair<int, int>>>
-    FNeighbourhood;
+using namespace std;
+
+typedef vector<pair<float, float>> TimeItvs;
+typedef pair<int, int> DTNode;
+typedef unordered_map<int, vector<pair<int, int>>> FNeighbourhood;
 
 class tempoNetwork {
 public:
-  tempoNetwork(float tStart, float tEnd, int n, std::vector<TimeItvs> W,
-               std::unordered_map<std::string, TimeItvs> E)
-      : _tStart(tStart), _tEnd(tEnd), _n(n), _W(W), _E(E),
-        _timeAspectSet(false) {}
+  tempoNetwork(Network aglo, vector<int> timeS);
+  tempoNetwork(float tStart, float tEnd, int n, vector<TimeItvs> W,
+               unordered_map<string, TimeItvs> E);
   float startTime() { return _tStart; }
   float endTime() { return _tEnd; }
   int size() { return _n; }
   TimeItvs getTimeItvs(int u) { return _W[u]; }
   TimeItvs getTimeItvs(int u, int v);
-  bool isTimeSet() { return _timeAspectSet; }
   float getEventVal(int eventId) { return _events[eventId].val(); }
+
+  /**
+   * Generate the tempoNetwork attributes from an aglomerated Network and a time
+   * serie using the bijection between the two parameters and a stream graph and
+   * using the bijection between the two parameters and a bipartite graph
+   */
+  void randomGeneration(Network aglo, vector<int> timeS);
+  void genRdTimes();
 
   /**
    * Instantiate tempoNetwork class attributes linked to time: _events,
    * _nodeEvents, _edgeEvents necessary for accessing future neighbourhoods and
-   * vanishing or appearance times.
+   * vanishing or appearance times. This function is automatically called when a
+   * TempoNetwork is given from a file
    */
   void initTimeEvents();
 
@@ -48,12 +57,12 @@ public:
    * Returns the vector of node ids neighbours of u at the event time
    * corresponding to t
    */
-  std::vector<int> getInstantNeighbours(int u, float t);
+  vector<int> getInstantNeighbours(int u, float t);
   /**
    * Returns the vector of node ids neighbours of u at the event time
    * corresponding to t
    */
-  std::vector<int> getInstantEventNeighbours(int u, int eventId);
+  vector<int> getInstantEventNeighbours(int u, int eventId);
   /**
    * Returns a map linking a node v to its intervals for all nodes v linked to u
    * in the time segment [s, s_+(u)] such that [t_-(v), t_+(v)] is an interval
@@ -66,33 +75,17 @@ private:
   float _tStart;
   float _tEnd;
   int _n;
-  std::vector<TimeItvs> _W;
-  std::unordered_map<std::string, TimeItvs> _E;
+  vector<TimeItvs> _W;
+  unordered_map<string, TimeItvs> _E;
 
-  bool _timeAspectSet;
-  std::vector<Event> _events;
-  std::vector<std::vector<int>> _nodeEvents;
-  std::vector<std::vector<std::pair<int, int>>> _edgeEvents;
-};
-
-/**
- * Class defining a simple custom exception, alerting on the lack of temporal
- * aspect initialization, can be solve by calling initTimeEvents()
- */
-class missing_temporal_init : public std::exception {
-private:
-  std::string message;
-
-public:
-  missing_temporal_init(const char *msg) : message(msg) {}
-  const char *what() const throw() { return message.c_str(); }
+  vector<Event> _events;
+  vector<vector<int>> _nodeEvents;
+  vector<vector<pair<int, int>>> _edgeEvents;
 };
 
 /**
  * Checks if the time given as parameter lies in one of the intervals
  */
 bool timeValid(TimeItvs, float t);
-tempoNetwork randomTempoNetwork(int n, float tStart, float tEnd,
-                                float p1); //, float p2, float p3);
 
 #endif // TEMPORALNETWORK_HPP

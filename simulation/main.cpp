@@ -9,39 +9,29 @@
 #include <utility>
 #include <vector>
 
-// Wheel of size 5
-// std::vector<int> xadj0 = {0, 4, 5, 6, 7, 8};
-// std::vector<int> adj0 = {1, 2, 3, 4, 0, 0, 0, 0};
-// std::vector<float> adjWt0 = {1, 1, 1, 1, 1, 1, 1, 1};
-// Network net0(xadj0, adj0, adjWt0);
+/**
+ * Experimenting if the approx step converges towards a Pagerank computation on
+ * certain temporal networks
+ */
+void expPRConvergence() {}
 
-// K3
-// std::vector<int> xadj1 = {0, 2, 4, 6};
-// std::vector<int> adj1 = {2, 3, 1, 3, 1, 2};
-// std::vector<float> adjWt1 = {1, 1, 1, 1, 1, 1};
-// Network net1(xadj1, adj1, adjWt1);
+/**
+ * Experimenting if the approx step stays in between the bounds defined for the
+ * discrete step
+ */
+void expApproxBounds() {}
 
-//   for (int w = 0; w < res.size(); w++) {
-//     std::cout << "Walker" << w << ": ";
-//     for (auto pos : res[w])
-//       std::cout << pos << " ";
-//     std::cout << std::endl;
-//   }
-
-// K5
-// std::vector<int> xadj2 = {0, 4, 8, 12, 16, 20};
-// std::vector<int> adj2 = {1, 2, 3, 4, 0, 2, 3, 4, 0, 1,
-//                          3, 4, 0, 1, 2, 4, 0, 1, 2, 3};
-// std::vector<float> adjWt2 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-//                              1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-// Network net2(xadj2, adj2, adjWt2);
+/**
+ * Experimenting if the approx convergences towards the discrete step
+ */
+void approComputation() {}
 
 int main(int argc, char *argv[]) {
 
   int n = 10;
   int nbWalkers = 10000;
   float p1 = 0.2;
-  int nbSteps = 100;
+  int nbSteps = 10; // 100;
   float tStart = 0.;
   float tEnd = 10.;
   // float p2 = 0.75;
@@ -70,8 +60,10 @@ int main(int argc, char *argv[]) {
   // std::vector<float> res = walkersDistribution(rdWalk, k, net.size());
 
   // Temporal network generation
-  tempoNetwork tnet = randomTempoNetwork(n, tStart, tEnd, p1); //, p2, p3);
-  // std::vector<std::vector<int>> tres = randomWalkSimulation();
+  auto h = [](float x) { return std::exp(-x); };
+  tempoNetwork tnet = randomTempoNetwork(n, tStart, tEnd, p1);
+  std::vector<std::vector<std::pair<int, int>>> rdWalk =
+      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
 
   // Pagerank computation
   // std::vector<float> pValues(net.size(), 1. / net.size());
