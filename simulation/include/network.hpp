@@ -3,33 +3,38 @@
 
 #include <vector>
 
+using namespace std;
+
 /**
  * Network class, a graph stored with adjacency lists.
  */
 class Network {
 public:
-  Network(std::vector<int> xadj, std::vector<int> adj, std::vector<float> adjWt)
+  Network(int n, float p);
+  Network(vector<int> xadj, vector<int> adj, vector<int> adjWt,
+          vector<int> ndWt)
       : _n(xadj.size() - 1), _xadjacency(xadj), _adjacency(adj),
-        _adjacencyWeight(adjWt) {}
-  std::vector<int> xAdjacency() { return _xadjacency; }
-  std::vector<float> adjacencyWeight() { return _adjacencyWeight; }
-  std::vector<int> adjacency() { return _adjacency; }
+        _adjacencyWeight(adjWt), _nodeWeight(ndWt) {}
+  vector<int> xAdjacency() { return _xadjacency; }
+  vector<int> adjacencyWeight() { return _adjacencyWeight; }
+  vector<int> adjacency() { return _adjacency; }
   int size() { return _n; }
   int nbEdges() { return _adjacencyWeight.size(); }
 
-  std::vector<int> neighbours(int u);
-  std::vector<float> neighboursWeights(int u);
+  void randomErdosRenyiNetwork(int n, float p);
+
+  vector<int> neighbours(int u);
+  vector<float> neighboursWeights(int u);
   int getRdLocation(int u);
   void display();
   void checkConsistency();
 
 private:
   int _n;
-  std::vector<int> _xadjacency;
-  std::vector<float> _adjacencyWeight;
-  std::vector<int> _adjacency;
+  vector<int> _xadjacency;
+  vector<int> _adjacencyWeight;
+  vector<int> _adjacency;
+  vector<int> _nodeWeight;
 };
-
-Network randomErdosRenyiNetwork(int n, float p);
 
 #endif // NETWORK_HPP

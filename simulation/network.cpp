@@ -7,24 +7,29 @@
 #include <random>
 #include <vector>
 
-std::vector<int> Network::neighbours(int u) {
-  std::vector<int> neigh;
+Network::Network(int n, float p) {
+  randomErdosRenyiNetwork(n, p);
+  _n = n;
+}
+
+vector<int> Network::neighbours(int u) {
+  vector<int> neigh;
   for (int i = _xadjacency[u]; i < _xadjacency[u + 1]; i++)
     neigh.push_back(_adjacency[i]);
   return neigh;
 }
 
-std::vector<float> Network::neighboursWeights(int u) {
-  std::vector<float> weights;
+vector<float> Network::neighboursWeights(int u) {
+  vector<float> weights;
   for (int i = _xadjacency[u]; i < _xadjacency[u + 1]; i++)
     weights.push_back(_adjacencyWeight[i]);
   return weights;
 }
 
 int Network::getRdLocation(int u) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> dis(0, _n - 1);
+  random_device rd;
+  mt19937 gen(rd());
+  uniform_int_distribution<> dis(0, _n - 1);
   int dest = dis(gen);
   while (dest == u)
     dest = dis(gen);
@@ -32,16 +37,16 @@ int Network::getRdLocation(int u) {
 }
 
 void Network::display() {
-  std::cout << "Number of nodes: " << _n << std::endl;
-  std::cout << "Cumulative nb of neighbour per node:";
+  cout << "Number of nodes: " << _n << endl;
+  cout << "Cumulative nb of neighbour per node:";
   for (auto x : _xadjacency)
-    std::cout << " " << x;
-  std::cout << std::endl << "Ordered list of neighbours:";
+    cout << " " << x;
+  cout << endl << "Ordered list of neighbours:";
   for (auto a : _adjacency)
-    std::cout << " " << a;
-  std::cout << std::endl << "Weight of the above edges:";
+    cout << " " << a;
+  cout << endl << "Weight of the above edges:";
   for (auto w : _adjacencyWeight)
-    std::cout << " " << w;
+    cout << " " << w;
 }
 
 void Network::checkConsistency() {
@@ -49,7 +54,7 @@ void Network::checkConsistency() {
   assert(nbEdges() == _adjacency.size());
   assert(_xadjacency.back() == nbEdges());
   assert(_xadjacency[0] == 0);
-  auto isSorted = [&](std::vector<int> v) {
+  auto isSorted = [&](vector<int> v) {
     for (int i = 1; i < v.size(); i++)
       if (v[i] < v[i - 1])
         return false;
@@ -58,10 +63,10 @@ void Network::checkConsistency() {
   assert(isSorted(_xadjacency));
   auto neighbourConsistent = [&]() {
     for (int u = 0; u < _n; u++) {
-      std::vector<int> neigh = neighbours(u);
+      vector<int> neigh = neighbours(u);
       for (auto v : neigh) {
-        std::vector<int> vNeigh = neighbours(v);
-        int occ = std::count(vNeigh.begin(), vNeigh.end(), u);
+        vector<int> vNeigh = neighbours(v);
+        int occ = count(vNeigh.begin(), vNeigh.end(), u);
         if (occ != 1)
           return false;
       }
@@ -70,15 +75,15 @@ void Network::checkConsistency() {
   };
 }
 
-Network randomErdosRenyiNetwork(int n, float p) {
-  std::vector<int> xadjacency(n + 1, 0);
-  std::vector<int> adjacency;
+void Network::randomErdosRenyiNetwork(int n, float p) {
+  vector<int> xadjacency(n + 1, 0);
+  vector<int> adjacency;
 
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_real_distribution<> dis(0.0, 1.0);
+  random_device rd;
+  mt19937 gen(rd());
+  uniform_real_distribution<> dis(0.0, 1.0);
 
-  std::map<std::pair<int, int>, bool> notSet;
+  map<pair<int, int>, bool> notSet;
   for (int i = 0; i < n; i++) {
     int x = 0;
     for (int j = 0; j < n; j++) {
@@ -97,6 +102,10 @@ Network randomErdosRenyiNetwork(int n, float p) {
     }
     xadjacency[i + 1] = xadjacency[i] + x;
   }
-  std::vector<float> adjacencyWeight(adjacency.size(), 1);
-  return Network(xadjacency, adjacency, adjacencyWeight);
+  vector<int> adjacencyWeight(adjacency.size(), 1);
+  vector<int> ndWeights(n, 1);
+  _xadjacency = xadjacency;
+  _adjacency = adjacency;
+  _adjacencyWeight = adjacencyWeight;
+  _nodeWeight = ndWeights;
 }
