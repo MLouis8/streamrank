@@ -1,15 +1,17 @@
 #include "include/randomWalk.hpp"
-#include "include/temporalNetwork.hpp"
+#include "include/strHandler.hpp"
 #include "include/walker.hpp"
 #include <functional>
 #include <iostream>
+#include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
-std::vector<std::vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps,
-                                                   float eps, float alpha,
-                                                   Network &net) {
-  std::vector<std::vector<int>> walkersPositions;
-  std::vector<Walker<int>> walkersList;
+vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
+                                         float alpha, Network &net) {
+  vector<vector<int>> walkersPositions;
+  vector<Walker<int>> walkersList;
   for (int i = 0; i < nbWalkers; i++) {
     int startingPosition = net.getRdLocation(-1);
     walkersPositions.push_back({startingPosition});
@@ -26,12 +28,13 @@ std::vector<std::vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps,
 
 // change random Location to have a starting position at time 0
 // rmv while in actual rd Loc
-std::vector<std::vector<std::pair<int, int>>>
-randomWalkSimulation(int nbWalkers, int nbSteps, float eps, float alpha,
-                     tempoNetwork &tnet, std::function<float(float)> h,
-                     int stepType) {
-  std::vector<std::vector<DTNode>> walkersPositions;
-  std::vector<Walker<DTNode>> walkersList;
+vector<vector<pair<int, int>>> randomWalkSimulation(int nbWalkers, int nbSteps,
+                                                    float eps, float alpha,
+                                                    tempoNetwork &tnet,
+                                                    function<float(float)> h,
+                                                    int stepType) {
+  vector<vector<DTNode>> walkersPositions;
+  vector<Walker<DTNode>> walkersList;
   for (int i = 0; i < nbWalkers; i++) {
     DTNode startingPosition = {-1, 0}; // tnet.getRdLocation({-1, 0});
     walkersPositions.push_back({startingPosition});
@@ -63,22 +66,31 @@ randomWalkSimulation(int nbWalkers, int nbSteps, float eps, float alpha,
   return walkersPositions;
 }
 
-std::vector<float> walkersDistribution(std::vector<std::vector<int>> steps,
-                                       int k, int n) {
-  std::vector<float> res(n, 0.);
-  std::cout << "step size " << steps.size() << std::endl;
-  for (auto walker : steps) {
-    res[walker[k]] += 1. / steps.size();
-    std::cout << walker[k] << " ";
+vector<float> walkersDistribution(vector<vector<int>> wlkSteps, int step,
+                                  int n) {
+  vector<float> res(n, 0.);
+  for (auto walker : wlkSteps) {
+    res[walker[step]] += 1. / wlkSteps.size();
   }
   return res;
 }
 
-void displayResults(std::vector<std::vector<int>> steps, int n) {
+vector<float> walkersDistribution(vector<vector<pair<int, int>>> wlkSteps,
+                                  int step, unordered_map<string, int> tnodes) {
+  vector<float> res(tnodes.size(), 0.);
+
+  return res;
+  for (auto walker : wlkSteps) {
+    res[tnodes[pairToStr(walker[step])]] += 1. / wlkSteps.size();
+  }
+  return res;
+}
+
+void displayResults(vector<vector<int>> steps, int n) {
   int k = steps[0].size() - 1;
-  std::vector<float> res = walkersDistribution(steps, k, n);
-  std::cout << "Pagerank Vector: ";
+  vector<float> res = walkersDistribution(steps, k, n);
+  cout << "Pagerank Vector: ";
   for (auto val : res)
-    std::cout << " " << val;
-  std::cout << std::endl;
+    cout << " " << val;
+  cout << '\n';
 }

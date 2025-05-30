@@ -3,12 +3,8 @@
 #include "include/pagerank.hpp"
 #include "include/randomWalk.hpp"
 #include "include/rdLib.hpp"
-// #include "include/temporalNetwork.hpp"
-#include <iomanip>
 #include <iostream>
-#include <map>
 #include <numeric>
-#include <random>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -45,10 +41,10 @@ void expPRConvergence(int n, float pEdge, float alpha, float eps, int nbSteps,
   Matrix p(pValues, {1, net.size()});
   pair<Matrix, Matrix> ha = networkToPagerakMatrices(net);
   Matrix pr = pwrPagerank(ha.first, ha.second, alpha, p, nbSteps, eps);
-  cout << "Pagerank:" << endl;
+  cout << "Pagerank:\n";
   pr.print();
 
-  cout << "Difference:" << endl;
+  cout << "Difference:\n";
   vector<float> diff;
   for (int i = 0; i < pr.dim().second; i++)
     diff.push_back(abs(pr(0, i) - res[i]));
@@ -80,11 +76,11 @@ int main(int argc, char *argv[]) {
   int sumEdges = 200;
   int nbEvents = 10;
 
-  cout << "Graph parameters:" << endl;
+  cout << "Graph parameters:\n";
   cout << "n: " << n << ", P(edge): " << p;
-  cout << ", t_start: " << tStart << ", t_end: " << tEnd << endl;
-  cout << "Random Walk parameters:" << endl;
-  cout << "nb walkers: " << nbWalkers << ", nb steps:" << nbSteps << endl;
+  cout << ", t_start: " << tStart << ", t_end: " << tEnd << '\n';
+  cout << "Random Walk parameters:\n";
+  cout << "nb walkers: " << nbWalkers << ", nb steps:" << nbSteps << '\n';
 
   // Temporal network generation
   Network agloNet(n, p, sumNodes, sumEdges, nbEvents);
@@ -95,25 +91,11 @@ int main(int argc, char *argv[]) {
   vector<int> nts = rdTimeSeries(sumNodes, nbEvents, n);
   vector<int> ets = rdTimeSeries(sumEdges, nbEvents, agloNet.nbEdges() / 2);
   tempoNetwork tnet(agloNet, nts, ets, tStart, tEnd);
-  tnet.display();
+  auto h = [](float x) { return exp(-x); };
+  vector<vector<pair<int, int>>> rdWalk =
+      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
 
-  // auto h = [](float x) { return exp(-x); };
-  // vector<vector<pair<int, int>>> rdWalk =
-  // randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
-
-  // std::random_device rd;
-  // std::mt19937 gen(rd());
-  // vector<int> w = {1, 0, 0, 0};
-  // std::discrete_distribution<> d(w.begin(), w.end());
-  // std::map<int, int> map;
-
-  // for (int n = 0; n < 1e4; ++n) {
-  //   ++map[d(gen)];
-  //   w = {1, 1, 1, 1};
-  //   d = discrete_distribution<>(w.begin(), w.end());
-  // }
-
-  // for (const auto &[num, count] : map)
-  //   std::cout << num << " generated " << std::setw(4) << count << " times\n";
+  cout << "Random walk done, now the results:\n";
+  displayResults(rdWalk, tnet.size());
   return 0;
 }

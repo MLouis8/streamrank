@@ -6,21 +6,26 @@
 #include <functional>
 #include <utility>
 
+using namespace std;
+
 /**
  * Simulation of a random walk on a static network (graph).
  */
-std::vector<std::vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps,
-                                                   float eps, float alpha,
-                                                   Network &net);
+vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
+                                         float alpha, Network &net);
 
-std::vector<std::vector<std::pair<int, int>>>
-randomWalkSimulation(int nbWalkers, int nbSteps, float eps, float alpha,
-                     tempoNetwork &tnet, std::function<float(float)> h,
-                     int stepType);
+vector<vector<pair<int, int>>> randomWalkSimulation(int nbWalkers, int nbSteps,
+                                                    float eps, float alpha,
+                                                    tempoNetwork &tnet,
+                                                    function<float(float)> h,
+                                                    int stepType);
 
-std::vector<float> walkersDistribution(std::vector<std::vector<int>> steps,
-                                       int k, int n);
+vector<float> walkersDistribution(vector<vector<int>> wlkSteps, int step,
+                                  int n);
 
-void displayResults(std::vector<std::vector<int>> rdWalk, int n);
+vector<float> walkersDistribution(vector<vector<pair<int, int>>> wlkSteps,
+                                  int step, int n);
+
+void displayResults(vector<vector<int>> rdWalk, int n);
 
 #endif // RANDOMWALK_HPP

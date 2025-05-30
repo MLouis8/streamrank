@@ -17,9 +17,9 @@ void Matrix::print() {
   for (int i = 0; i < _dim.first; i++) {
     for (int j = 0; j < _dim.second; j++)
       std::cout << (*this)(i, j) << " ";
-    std::cout << std::endl;
+    std::cout << '\n';
   }
-  std::cout << std::endl;
+  std::cout << '\n';
 }
 
 Matrix Matrix::operator+(Matrix b) {

@@ -81,17 +81,17 @@ int Network::getRdLocation(int u) {
 
 void Network::display() {
   cout << "Number of nodes: " << _n << " Number of edges: " << nbEdges() << "/"
-       << nbEdges() / 2 << endl;
+       << nbEdges() / 2 << '\n';
   cout << "Cumulative nb of neighbour per node:";
   for (auto x : _xadjacency)
     cout << " " << x;
-  cout << endl << "Weights of the above nodes:";
+  cout << "\nWeights of the above nodes:";
   for (auto w : _nodeWeight)
     cout << " " << w;
-  cout << endl << "Ordered list of neighbours:";
+  cout << "\nOrdered list of neighbours:";
   for (auto a : _adjacency)
     cout << " " << a;
-  cout << endl << "Weights of the above edges:";
+  cout << "\nWeights of the above edges:";
   for (auto w : _adjacencyWeight)
     cout << " " << w;
 }
