@@ -1,7 +1,5 @@
 #include "include/temporalNetwork.hpp"
-#include "include/bipartite.hpp"
-#include "include/event.hpp"
-#include "include/network.hpp"
+#include "include/rdLib.hpp"
 #include "include/strHandler.hpp"
 
 #include <algorithm>

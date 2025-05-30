@@ -1,5 +1,6 @@
 #include "include/network.hpp"
-#include "include/temporalNetwork.hpp"
+#include "include/rdLib.hpp"
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -12,6 +13,34 @@
 Network::Network(int n, float p) {
   randomErdosRenyiNetwork(n, p);
   _n = n;
+}
+
+Network::Network(int n, float p, int vSumWt, int eSumWt, int nbEvents) {
+  randomErdosRenyiNetwork(n, p);
+  _n = n;
+  for (int i = 0; i < n; i++)
+    _nodeWeight[i] = 0;
+  for (int j = 0; j < _adjacencyWeight.size(); j++)
+    _adjacencyWeight[j] = 0;
+  random_device rd;
+  mt19937 gen(rd());
+  _nodeWeight = rdTimeSeries(vSumWt, n, nbEvents);
+  vector<int> weights(_adjacencyWeight.size(), 1);
+  vector<int> edgeCap;
+  for (int edge = 0; edge < _adjacencyWeight.size(); edge++) {
+    pair<int, int> uv = getEdge(edge);
+    edgeCap.push_back(min(_nodeWeight[uv.first], _nodeWeight[uv.second]));
+  }
+  discrete_distribution<> edgeDis(weights.begin(), weights.end());
+  for (int y = 0; y < eSumWt; y++) {
+    int id = edgeDis(gen);
+    _adjacencyWeight[id] += 1;
+    edgeCap[id]--;
+    if (edgeCap[id] == 0) {
+      weights[id] = 0;
+      edgeDis = discrete_distribution<>(weights.begin(), weights.end());
+    }
+  }
 }
 
 vector<int> Network::neighbours(int u) {
@@ -51,14 +80,18 @@ int Network::getRdLocation(int u) {
 }
 
 void Network::display() {
-  cout << "Number of nodes: " << _n << endl;
+  cout << "Number of nodes: " << _n << " Number of edges: " << nbEdges() << "/"
+       << nbEdges() / 2 << endl;
   cout << "Cumulative nb of neighbour per node:";
   for (auto x : _xadjacency)
     cout << " " << x;
+  cout << endl << "Weights of the above nodes:";
+  for (auto w : _nodeWeight)
+    cout << " " << w;
   cout << endl << "Ordered list of neighbours:";
   for (auto a : _adjacency)
     cout << " " << a;
-  cout << endl << "Weight of the above edges:";
+  cout << endl << "Weights of the above edges:";
   for (auto w : _adjacencyWeight)
     cout << " " << w;
 }

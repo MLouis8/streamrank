@@ -2,18 +2,58 @@
 #include "include/network.hpp"
 #include "include/pagerank.hpp"
 #include "include/randomWalk.hpp"
+#include "include/rdLib.hpp"
 // #include "include/temporalNetwork.hpp"
+#include <iomanip>
 #include <iostream>
+#include <map>
 #include <numeric>
+#include <random>
 #include <stdexcept>
 #include <utility>
 #include <vector>
+
+// vector<int> xadj = {0,  5,  8,  10, 13, 15, 18, 20,
+//                     23, 24, 26, 27, 29, 31, 33, 34};
+// vector<int> adj = {1,  2, 3, 4, 5, 0, 7, 9, 0, 9, 0, 10, 11, 0,  6,  0,
+//                    12, 4, 7, 1, 6, 8, 1, 2, 3, 3, 5, 5,  13, 12, 14, 14};
+// vector<int> adjWt = {9, 9, 9, 9, 9, 9, 7, 10, 9,  7, 9, 2, 9, 9, 6, 9, 6,
+//                      5, 6, 8, 7, 8, 9, 9, 7,  10, 2, 9, 6, 5, 8, 8, 3, 3};
+// vector<int> ndWt = {
+//     10, 10, 9, 10, 10, 8, 7,
+// };
+// Network agloNet = Network(xadj, adj, adjWt, ndWt);
 
 /**
  * Experimenting if the approx step converges towards a Pagerank computation on
  * certain temporal networks
  */
-void expPRConvergence() {}
+void expPRConvergence(int n, float pEdge, float alpha, float eps, int nbSteps,
+                      int nbWalkers) {
+  // Network creation
+  Network net(pEdge, n);
+  net.display();
+  net.checkConsistency();
+  vector<vector<int>> rdWalk =
+      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net);
+  displayResults(rdWalk, net.size());
+  int k = rdWalk[0].size() - 1;
+  vector<float> res = walkersDistribution(rdWalk, k, net.size());
+
+  // Pagerank computation
+  vector<float> pValues(net.size(), 1. / net.size());
+  Matrix p(pValues, {1, net.size()});
+  pair<Matrix, Matrix> ha = networkToPagerakMatrices(net);
+  Matrix pr = pwrPagerank(ha.first, ha.second, alpha, p, nbSteps, eps);
+  cout << "Pagerank:" << endl;
+  pr.print();
+
+  cout << "Difference:" << endl;
+  vector<float> diff;
+  for (int i = 0; i < pr.dim().second; i++)
+    diff.push_back(abs(pr(0, i) - res[i]));
+  cout << accumulate(diff.begin(), diff.end(), 0.);
+}
 
 /**
  * Experimenting if the approx step stays in between the bounds defined for the
@@ -30,53 +70,50 @@ int main(int argc, char *argv[]) {
 
   int n = 10;
   int nbWalkers = 10000;
-  float p1 = 0.2;
+  float p = 0.6;
   int nbSteps = 10; // 100;
   float tStart = 0.;
   float tEnd = 10.;
-  // float p2 = 0.75;
-  // float p3 = 0.9;
-
-  std::cout << "Graph parameters:" << std::endl;
-  std::cout << "n: " << n << ", P(edge): " << p1;
-  std::cout << ", t_start: " << tStart << ", t_end: " << tEnd << std::endl;
-  // std::cout << "Avg node filling: " << p2 << ", Avg edge filling: " << p3
-  // << std::endl;
-  std::cout << "Random Walk parameters:" << std::endl;
-  std::cout << "nb walkers: " << nbWalkers << ", nb steps:" << nbSteps
-            << std::endl;
   float eps = 0.00001;
   float alpha = 0.85;
+  int sumNodes = 80;
+  int sumEdges = 200;
+  int nbEvents = 10;
 
-  // Static network generation + pr sim
-  // Network net = randomErdosRenyiNetwork(nbVertices, probaEdge);
-  // net.display();
-  // net.checkConsistency();
-  // std::vector<std::vector<int>> rdWalk =
-  //     randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, net);
-  // displayResults(rdWalk, net.size());
-
-  // int k = rdWalk[0].size() - 1;
-  // std::vector<float> res = walkersDistribution(rdWalk, k, net.size());
+  cout << "Graph parameters:" << endl;
+  cout << "n: " << n << ", P(edge): " << p;
+  cout << ", t_start: " << tStart << ", t_end: " << tEnd << endl;
+  cout << "Random Walk parameters:" << endl;
+  cout << "nb walkers: " << nbWalkers << ", nb steps:" << nbSteps << endl;
 
   // Temporal network generation
-  auto h = [](float x) { return std::exp(-x); };
-  tempoNetwork tnet = randomTempoNetwork(n, tStart, tEnd, p1);
-  std::vector<std::vector<std::pair<int, int>>> rdWalk =
-      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
+  Network agloNet(n, p, sumNodes, sumEdges, nbEvents);
+  agloNet.checkConsistency();
+  agloNet.display();
+  if (nbEvents * agloNet.nbEdges() / 2 < sumEdges)
+    throw invalid_argument("sumEdges is too high.");
+  vector<int> nts = rdTimeSeries(sumNodes, nbEvents, n);
+  vector<int> ets = rdTimeSeries(sumEdges, nbEvents, agloNet.nbEdges() / 2);
+  tempoNetwork tnet(agloNet, nts, ets, tStart, tEnd);
+  tnet.display();
 
-  // Pagerank computation
-  // std::vector<float> pValues(net.size(), 1. / net.size());
-  // Matrix p(pValues, {1, net.size()});
-  // std::pair<Matrix, Matrix> ha = networkToPagerakMatrices(net);
-  // Matrix pr = pwrPagerank(ha.first, ha.second, alpha, p, nbSteps, eps);
-  // std::cout << "Pagerank:" << std::endl;
-  // pr.print();
+  // auto h = [](float x) { return exp(-x); };
+  // vector<vector<pair<int, int>>> rdWalk =
+  // randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
 
-  // std::cout << "Difference:" << std::endl;
-  // std::vector<float> diff;
-  // for (int i = 0; i < pr.dim().second; i++)
-  //   diff.push_back(std::abs(pr(0, i) - res[i]));
-  // std::cout << accumulate(diff.begin(), diff.end(), 0.);
+  // std::random_device rd;
+  // std::mt19937 gen(rd());
+  // vector<int> w = {1, 0, 0, 0};
+  // std::discrete_distribution<> d(w.begin(), w.end());
+  // std::map<int, int> map;
+
+  // for (int n = 0; n < 1e4; ++n) {
+  //   ++map[d(gen)];
+  //   w = {1, 1, 1, 1};
+  //   d = discrete_distribution<>(w.begin(), w.end());
+  // }
+
+  // for (const auto &[num, count] : map)
+  //   std::cout << num << " generated " << std::setw(4) << count << " times\n";
   return 0;
 }

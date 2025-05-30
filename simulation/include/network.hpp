@@ -12,6 +12,7 @@ using namespace std;
 class Network {
 public:
   Network(int n, float p);
+  Network(int n, float p, int vSumWt, int eSumWt, int nbEvents);
   Network(vector<int> xadj, vector<int> adj, vector<int> adjWt,
           vector<int> ndWt)
       : _n(xadj.size() - 1), _xadjacency(xadj), _adjacency(adj),
@@ -21,6 +22,7 @@ public:
   vector<int> adjacency() { return _adjacency; }
   vector<int> nodeWeight() { return _nodeWeight; }
   int size() { return _n; }
+  // Be careful for unoriented graphs, nbEdges is doubled
   int nbEdges() { return _adjacencyWeight.size(); }
 
   void randomErdosRenyiNetwork(int n, float p);
