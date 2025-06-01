@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -172,7 +171,7 @@ FNeighbourhood tempoNetwork::getFutureNeighbours(int u, int idEvent) {
   return res;
 }
 
-DTNode tempoNetwork::getRdLocation(DTNode prevLoc) {
+DTNode tempoNetwork::getRdTempoNode(DTNode prevLoc) {
   random_device rd;
   mt19937 gen(rd());
   vector<int> w;
@@ -188,6 +187,13 @@ DTNode tempoNetwork::getRdLocation(DTNode prevLoc) {
   while (u == prevLoc.first)
     u = dis2(gen);
   return {u, s};
+}
+
+int tempoNetwork::getRdLocation(int t) {
+  random_device rd;
+  mt19937 gen(rd());
+  uniform_int_distribution<> dis(0, _nodeEvents[t].size() - 1);
+  return _nodeEvents[t][dis(gen)];
 }
 
 bool timeValid(TimeItvs itvs, float t) {

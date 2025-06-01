@@ -5,51 +5,51 @@
 #include <vector>
 
 template <> int Walker<int>::step(Network &net, float alpha) {
-  std::random_device rd;
-  std::default_random_engine eng(rd());
-  std::uniform_real_distribution<float> jumpDis(0, 1);
+  random_device rd;
+  default_random_engine eng(rd());
+  uniform_real_distribution<float> jumpDis(0, 1);
 
-  std::vector<int> neigh = net.neighbours(_pos);
+  vector<int> neigh = net.neighbours(_pos);
   if (jumpDis(eng) > alpha || neigh.size() == 0) { // jump anywhere in the graph
     _pos = net.getRdLocation(_pos);
   } else { // walk to a neighbour
-    std::vector<float> weights = net.neighboursWeights(_pos);
-    std::discrete_distribution<> neighbourDis(weights.begin(), weights.end());
+    vector<float> weights = net.neighboursWeights(_pos);
+    discrete_distribution<> neighbourDis(weights.begin(), weights.end());
     _pos = neighbourDis(eng);
   }
   return _pos;
 }
 
-template <>
-DTNode Walker<DTNode>::step(tempoNetwork &tnet, float alpha,
-                            std::function<float(float)> h) {
-  std::random_device rd;
-  std::default_random_engine eng(rd());
-  FNeighbourhood fnhb = tnet.getFutureNeighbours(_pos.first, _pos.second);
+// template <>
+// DTNode Walker<DTNode>::step(tempoNetwork &tnet, float alpha,
+//                             function<float(float)> h) {
+//   random_device rd;
+//   default_random_engine eng(rd());
+//   FNeighbourhood fnhb = tnet.getFutureNeighbours(_pos.first, _pos.second);
 
-  std::uniform_real_distribution<float> jumpDis(0, 1);
-  if (jumpDis(eng) > alpha || fnhb.size() == 0) {
-    _pos = tnet.getRdLocation(_pos);
-  } else {
-  }
-  return _pos;
-}
+//   uniform_real_distribution<float> jumpDis(0, 1);
+//   if (jumpDis(eng) > alpha || fnhb.size() == 0) {
+//     _pos = {tnet.getRdLocation(_pos.second), _pos.second + 1};
+//   } else {
+//   }
+//   return _pos;
+// }
 
 template <>
 DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
-                                  std::function<float(float)> h) {
-  std::random_device rd;
-  std::default_random_engine eng(rd());
-  std::uniform_real_distribution<float> jumpDis(0, 1);
+                                  function<float(float)> h) {
+  random_device rd;
+  default_random_engine eng(rd());
+  uniform_real_distribution<float> jumpDis(0, 1);
 
   FNeighbourhood fnhb = tnet.getFutureNeighbours(_pos.first, _pos.second);
 
   if (jumpDis(eng) > alpha || fnhb.size() == 0) {
-    _pos = tnet.getRdLocation(_pos);
+    _pos = {tnet.getRdLocation(_pos.second), _pos.second + 1};
   } else {
     // choose v amongts the future neighbours of u
-    std::vector<float> w1;
-    std::vector<int> neighbours;
+    vector<float> w1;
+    vector<int> neighbours;
     for (auto &[key, val] : fnhb) {
       float s = 0;
       for (auto interval : val) {
@@ -58,7 +58,7 @@ DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
       w1.push_back(s);
       neighbours.push_back(key);
     }
-    std::discrete_distribution<> dis1(w1.begin(), w1.end());
+    discrete_distribution<> dis1(w1.begin(), w1.end());
     int v = neighbours[dis1(eng)];
 
     // select an event
@@ -71,8 +71,8 @@ DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
         break;
       }
     }
-    std::vector<int> possibleEvents;
-    std::vector<float> w2;
+    vector<int> possibleEvents;
+    vector<float> w2;
     float tk1 = tnet.getEventVal(_pos.second + 1);
     for (int l = _pos.second + 1; l <= vEnd; l++) {
       possibleEvents.push_back(l);
@@ -96,7 +96,7 @@ DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
       w = w * h(tl - tk1);
       w2.push_back(w);
     }
-    std::discrete_distribution<> dis2(w2.begin(), w2.end());
+    discrete_distribution<> dis2(w2.begin(), w2.end());
     int t = possibleEvents[dis2(eng)];
     _pos = {v, t};
   }
@@ -105,18 +105,18 @@ DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
 
 template <>
 DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
-                                  std::function<float(float)> h) {
-  std::random_device rd;
-  std::default_random_engine eng(rd());
+                                  function<float(float)> h) {
+  random_device rd;
+  default_random_engine eng(rd());
   FNeighbourhood fnhb = tnet.getFutureNeighbours(_pos.first, _pos.second);
 
-  std::uniform_real_distribution<float> jumpDis(0, 1);
+  uniform_real_distribution<float> jumpDis(0, 1);
   if (jumpDis(eng) > alpha || fnhb.size() == 0) {
-    _pos = tnet.getRdLocation(_pos);
+    _pos = {tnet.getRdLocation(_pos.second), _pos.second + 1};
   } else {
     // choose v amongts the future neighbours of u
-    std::vector<float> w1;
-    std::vector<int> neighbours;
+    vector<float> w1;
+    vector<int> neighbours;
     for (auto &[key, val] : fnhb) {
       float s = 0;
       for (auto interval : val) {
@@ -125,7 +125,7 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
       w1.push_back(s);
       neighbours.push_back(key);
     }
-    std::discrete_distribution<> dis1(w1.begin(), w1.end());
+    discrete_distribution<> dis1(w1.begin(), w1.end());
     int v = neighbours[dis1(eng)];
 
     // select an event
@@ -138,8 +138,8 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
         break;
       }
     }
-    std::vector<int> possibleEvents;
-    std::vector<float> w2;
+    vector<int> possibleEvents;
+    vector<float> w2;
     float tk1 = tnet.getEventVal(_pos.second + 1);
     float tk = tnet.getEventVal(_pos.second);
     for (int l = _pos.second + 1; l <= vEnd; l++) {
@@ -160,7 +160,7 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
       w = w * h(tl - tk1);
       w2.push_back(w);
     }
-    std::discrete_distribution<> dis2(w2.begin(), w2.end());
+    discrete_distribution<> dis2(w2.begin(), w2.end());
     int t = possibleEvents[dis2(eng)];
     _pos = {v, t};
   }
@@ -169,18 +169,18 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
 
 template <>
 DTNode Walker<DTNode>::lowerBound(tempoNetwork &tnet, float alpha,
-                                  std::function<float(float)> h) {
-  std::random_device rd;
-  std::default_random_engine eng(rd());
-  std::uniform_real_distribution<float> jumpDis(0, 1);
+                                  function<float(float)> h) {
+  random_device rd;
+  default_random_engine eng(rd());
+  uniform_real_distribution<float> jumpDis(0, 1);
   FNeighbourhood fnhb = tnet.getFutureNeighbours(_pos.first, _pos.second);
 
   if (jumpDis(eng) > alpha || fnhb.size() == 0) {
-    _pos = tnet.getRdLocation(_pos);
+    _pos = {tnet.getRdLocation(_pos.second), _pos.second + 1};
   } else {
     // choose v amongts the future neighbours of u
-    std::vector<float> w1;
-    std::vector<int> neighbours;
+    vector<float> w1;
+    vector<int> neighbours;
     for (auto &[key, val] : fnhb) {
       float s = 0;
       for (auto interval : val) {
@@ -189,7 +189,7 @@ DTNode Walker<DTNode>::lowerBound(tempoNetwork &tnet, float alpha,
       w1.push_back(s);
       neighbours.push_back(key);
     }
-    std::discrete_distribution<> dis1(w1.begin(), w1.end());
+    discrete_distribution<> dis1(w1.begin(), w1.end());
     int v = neighbours[dis1(eng)];
 
     // select an event
@@ -202,8 +202,8 @@ DTNode Walker<DTNode>::lowerBound(tempoNetwork &tnet, float alpha,
         break;
       }
     }
-    std::vector<int> possibleEvents;
-    std::vector<float> w2;
+    vector<int> possibleEvents;
+    vector<float> w2;
     float tk1 = tnet.getEventVal(_pos.second + 1);
     for (int l = _pos.second + 1; l <= vEnd; l++) {
       possibleEvents.push_back(l);
@@ -225,7 +225,7 @@ DTNode Walker<DTNode>::lowerBound(tempoNetwork &tnet, float alpha,
       w = w * h(tl1 - tk);
       w2.push_back(w);
     }
-    std::discrete_distribution<> dis2(w2.begin(), w2.end());
+    discrete_distribution<> dis2(w2.begin(), w2.end());
     int t = possibleEvents[dis2(eng)];
     _pos = {v, t};
   }

@@ -4,7 +4,7 @@
 #include "network.hpp"
 #include "temporalNetwork.hpp"
 #include <functional>
-#include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -14,17 +14,16 @@ using namespace std;
 vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
                                          float alpha, Network &net);
 
-vector<vector<pair<int, int>>> randomWalkSimulation(int nbWalkers, int nbSteps,
-                                                    float eps, float alpha,
-                                                    tempoNetwork &tnet,
-                                                    function<float(float)> h,
-                                                    int stepType);
+vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
+                                         float alpha, tempoNetwork &tnet,
+                                         function<float(float)> h,
+                                         int stepType);
 
 vector<float> walkersDistribution(vector<vector<int>> wlkSteps, int step,
                                   int n);
 
-vector<float> walkersDistribution(vector<vector<pair<int, int>>> wlkSteps,
-                                  int step, int n);
+vector<float> walkersDistribution(vector<vector<int>> wlkSteps, int step,
+                                  vector<int> &nodeEvents);
 
 void displayResults(vector<vector<int>> rdWalk, int n);
 

@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
   vector<int> ets = rdTimeSeries(sumEdges, nbEvents, agloNet.nbEdges() / 2);
   tempoNetwork tnet(agloNet, nts, ets, tStart, tEnd);
   auto h = [](float x) { return exp(-x); };
-  vector<vector<pair<int, int>>> rdWalk =
+  vector<vector<int>> rdWalk =
       randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
 
   cout << "Random walk done, now the results:\n";

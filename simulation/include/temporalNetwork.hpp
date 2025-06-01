@@ -67,7 +67,12 @@ public:
    * if t is in [s, s_+(u)]
    */
   FNeighbourhood getFutureNeighbours(int u, int idEvent);
-  DTNode getRdLocation(DTNode prevLoc);
+
+  /**
+   * Returns a random node present at time t
+   */
+  int getRdLocation(int t);
+  DTNode getRdTempoNode(DTNode prevLoc);
 
 private:
   float _tStart;
