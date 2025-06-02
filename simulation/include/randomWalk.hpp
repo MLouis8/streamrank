@@ -22,9 +22,12 @@ vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
 vector<float> walkersDistribution(vector<vector<int>> wlkSteps, int step,
                                   int n);
 
-vector<float> walkersDistribution(vector<vector<int>> wlkSteps, int step,
-                                  vector<int> &nodeEvents);
+vector<float> walkersDistribution(vector<vector<int>> wlkSteps, int step, int n,
+                                  vector<vector<int>> &nodeEvents);
 
 void displayResults(vector<vector<int>> rdWalk, int n);
+
+void displayResults(vector<vector<int>> rdWalk, int n,
+                    vector<vector<int>> &nodeEvents);
 
 #endif // RANDOMWALK_HPP

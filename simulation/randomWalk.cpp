@@ -74,21 +74,31 @@ vector<float> walkersDistribution(vector<vector<int>> wlkSteps, int step,
   return res;
 }
 
-vector<float> walkersDistribution(vector<vector<int>> wlkSteps, int step,
-                                  vector<int> &nodeEvents) {
-  vector<float> res(nodeEvents.size(), 0.);
-
-  return res;
+vector<float> walkersDistribution(vector<vector<int>> wlkSteps, int step, int n,
+                                  vector<vector<int>> &nodeEvents) {
+  vector<float> res(n, -1);
+  for (int node : nodeEvents[step])
+    res[node] = 0.;
   for (auto walker : wlkSteps) {
-    res[nodeEvents[walker[step]]] += 1. / wlkSteps.size();
+    res[walker[step]] += 1. / wlkSteps.size();
   }
   return res;
 }
 
-void displayResults(vector<vector<int>> steps, int n) {
-  int k = steps[0].size() - 1;
-  vector<float> res = walkersDistribution(steps, k, n);
-  cout << "Pagerank Vector: ";
+void displayResults(vector<vector<int>> rdWalk, int n) {
+  int k = rdWalk[0].size() - 1;
+  vector<float> res = walkersDistribution(rdWalk, k, n);
+  cout << "Walkers Distribution: ";
+  for (auto val : res)
+    cout << " " << val;
+  cout << '\n';
+}
+
+void displayResults(vector<vector<int>> rdWalk, int n,
+                    vector<vector<int>> &nodeEvents) {
+  int k = rdWalk[0].size() - 1;
+  vector<float> res = walkersDistribution(rdWalk, k, n, nodeEvents);
+  cout << "Walkers Distribution: ";
   for (auto val : res)
     cout << " " << val;
   cout << '\n';

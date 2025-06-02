@@ -25,6 +25,7 @@ public:
   TimeItvs getTimeItvs(int u) { return _W[u]; }
   TimeItvs getTimeItvs(int u, int v);
   float getEventVal(int eventId) { return _events[eventId].val(); }
+  vector<vector<int>> &getNodeEvents() { return _nodeEvents; }
 
   /**
    * Generate the tempoNetwork attributes from an aglomerated Network and a time

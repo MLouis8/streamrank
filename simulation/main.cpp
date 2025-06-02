@@ -95,7 +95,15 @@ int main(int argc, char *argv[]) {
   vector<vector<int>> rdWalk =
       randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
 
-  cout << "Random walk done, now the results:\n";
-  displayResults(rdWalk, tnet.size());
+  cout << "\nRandom walk done, now the results:\n";
+  displayResults(rdWalk, tnet.size(), tnet.getNodeEvents());
+  // cout << "\nNodes present at last event: ";
+  // for (auto node : tnet.getNodeEvents()[tnet.getNodeEvents().size() - 1])
+  //   cout << node << " ";
+  // cout << '\n';
+  // cout << "\nWalkers positions at last event: ";
+  // for (auto walker : rdWalk)
+  //   cout << walker[walker.size() - 1] << " ";
+  // cout << '\n';
   return 0;
 }
