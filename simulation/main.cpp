@@ -65,9 +65,9 @@ void approComputation() {}
 int main(int argc, char *argv[]) {
 
   int n = 10;
-  int nbWalkers = 10000;
+  int nbWalkers = 1;
   float p = 0.6;
-  int nbSteps = 10; // 100;
+  int nbSteps = 9; // 100;
   float tStart = 0.;
   float tEnd = 10.;
   float eps = 0.00001;
@@ -91,12 +91,13 @@ int main(int argc, char *argv[]) {
   vector<int> nts = rdTimeSeries(sumNodes, nbEvents, n);
   vector<int> ets = rdTimeSeries(sumEdges, nbEvents, agloNet.nbEdges() / 2);
   tempoNetwork tnet(agloNet, nts, ets, tStart, tEnd);
+  cout << "\nTemporal Network generated\n";
   auto h = [](float x) { return exp(-x); };
   vector<vector<int>> rdWalk =
       randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
 
-  cout << "\nRandom walk done, now the results:\n";
-  displayResults(rdWalk, tnet.size(), tnet.getNodeEvents());
+  // cout << "\nRandom walk done, now the results:\n";
+  // displayResults(rdWalk, tnet.size(), tnet.getNodeEvents());
   // cout << "\nNodes present at last event: ";
   // for (auto node : tnet.getNodeEvents()[tnet.getNodeEvents().size() - 1])
   //   cout << node << " ";

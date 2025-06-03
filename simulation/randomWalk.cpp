@@ -46,17 +46,14 @@ vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
       // case 0: // DTRW
       //   newLoc = walkersList[i].step(tnet, alpha);
       //   break;
-      case 1: // approx
-        newLoc = walkersList[i].approxStep(tnet, alpha, h);
+      case 1:            // approx
+        newLoc = {0, 0}; // walkersList[i].approxStep(tnet, alpha, h);
         break;
       case 2: // upper bound
         newLoc = walkersList[i].upperBound(tnet, alpha, h);
         break;
       case 3: // lower bound
         newLoc = walkersList[i].lowerBound(tnet, alpha, h);
-        break;
-      default: // approx
-        newLoc = walkersList[i].approxStep(tnet, alpha, h);
         break;
       };
       walkersPositions[i].push_back(newLoc.first);

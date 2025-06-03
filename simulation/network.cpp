@@ -43,14 +43,14 @@ Network::Network(int n, float p, int vSumWt, int eSumWt, int nbEvents) {
   }
 }
 
-vector<int> Network::neighbours(int u) {
+vector<int> Network::neighbors(int u) {
   vector<int> neigh;
   for (int i = _xadjacency[u]; i < _xadjacency[u + 1]; i++)
     neigh.push_back(_adjacency[i]);
   return neigh;
 }
 
-vector<float> Network::neighboursWeights(int u) {
+vector<float> Network::neighborsWeights(int u) {
   vector<float> weights;
   for (int i = _xadjacency[u]; i < _xadjacency[u + 1]; i++)
     weights.push_back(_adjacencyWeight[i]);
@@ -82,13 +82,13 @@ int Network::getRdLocation(int u) {
 void Network::display() {
   cout << "Number of nodes: " << _n << " Number of edges: " << nbEdges() << "/"
        << nbEdges() / 2 << '\n';
-  cout << "Cumulative nb of neighbour per node:";
+  cout << "Cumulative nb of neighbor per node:";
   for (auto x : _xadjacency)
     cout << " " << x;
   cout << "\nWeights of the above nodes:";
   for (auto w : _nodeWeight)
     cout << " " << w;
-  cout << "\nOrdered list of neighbours:";
+  cout << "\nOrdered list of neighbors:";
   for (auto a : _adjacency)
     cout << " " << a;
   cout << "\nWeights of the above edges:";
@@ -108,11 +108,11 @@ void Network::checkConsistency() {
     return true;
   };
   assert(isSorted(_xadjacency));
-  auto neighbourConsistent = [&]() {
+  auto neighborConsistent = [&]() {
     for (int u = 0; u < _n; u++) {
-      vector<int> neigh = neighbours(u);
+      vector<int> neigh = neighbors(u);
       for (auto v : neigh) {
-        vector<int> vNeigh = neighbours(v);
+        vector<int> vNeigh = neighbors(v);
         int occ = count(vNeigh.begin(), vNeigh.end(), u);
         if (occ != 1)
           return false;

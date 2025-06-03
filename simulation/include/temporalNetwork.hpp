@@ -11,7 +11,7 @@
 
 typedef vector<pair<float, float>> TimeItvs;
 typedef pair<int, int> DTNode;
-typedef unordered_map<int, vector<pair<int, int>>> FNeighbourhood;
+typedef unordered_map<int, vector<int>> Fneighborhood;
 
 class tempoNetwork {
 public:
@@ -24,7 +24,7 @@ public:
   int size() { return _n; }
   TimeItvs getTimeItvs(int u) { return _W[u]; }
   TimeItvs getTimeItvs(int u, int v);
-  float getEventVal(int eventId) { return _events[eventId].val(); }
+  float getEventVal(int e) { return _events[e].val(); }
   vector<vector<int>> &getNodeEvents() { return _nodeEvents; }
 
   /**
@@ -37,37 +37,38 @@ public:
 
   /**
    * Instantiate tempoNetwork class attributes linked to time: _events,
-   * _nodeEvents, _edgeEvents necessary for accessing future neighbourhoods and
+   * _nodeEvents, _edgeEvents necessary for accessing future neighborhoods and
    * vanishing or appearance times. This function is automatically called when a
    * TempoNetwork is given from a file
    */
   void initTimeEvents();
 
   // Takes a time instant and returns the id of the event just before it
-  int timeToEventId(float t);
+  int timeToE(float t);
   bool checkNodePres(int u, float t);
   bool checkEdgePres(int u, int v, float t);
-  bool checkEdgeAtEvent(int u, int v, int event);
-  float getNodeVanishT(int u, float t);
-  float getNodeAppearT(int u, float t);
-  int getNodeVanishEventId(int u, int k);
-  int getNodeAppearEventId(int u, int k);
+  bool checkEdgeAtEvent(int u, int v, int e);
+  float nodeVanishT(int u, float t);
+  float nodeAppearT(int u, float t);
+  int nodeVanishE(int u, int k);
+  int nodeAppearE(int u, int k);
   /**
-   * Returns the vector of node ids neighbours of u at the event time
-   * corresponding to t
+   * Returns the vector of node ids of the neighbors of u at the event time
+   * corresponding to time t
    */
-  vector<int> getInstantNeighbours(int u, float t);
+  vector<int> instNeighbors(int u, float t);
+
   /**
-   * Returns the vector of node ids neighbours of u at the event time
-   * corresponding to t
+   * Returns the vector of node ids neighbors of u at the event e
    */
-  vector<int> getInstantEventNeighbours(int u, int eventId);
+  vector<int> instENeighbors(int u, int e);
+
   /**
    * Returns a map linking a node v to its intervals for all nodes v linked to u
    * in the time segment [s, s_+(u)] such that [t_-(v), t_+(v)] is an interval
    * if t is in [s, s_+(u)]
    */
-  FNeighbourhood getFutureNeighbours(int u, int idEvent);
+  Fneighborhood directFutureNeighbors(int u, int e);
 
   /**
    * Returns a random node present at time t

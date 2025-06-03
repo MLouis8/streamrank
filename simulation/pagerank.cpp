@@ -9,12 +9,12 @@ std::pair<Matrix, Matrix> networkToPagerakMatrices(Network &net) {
   std::vector<std::vector<float>> h;
   std::vector<float> a(net.size(), 0.);
   for (int u = 0; u < net.size(); u++) {
-    std::vector<int> neigh = net.neighbours(u);
+    std::vector<int> neigh = net.neighbors(u);
     std::vector<float> hh(net.size(), 0.);
     if (neigh.size() == 0) {
       a[u] = 1.;
     } else {
-      std::vector<float> neighW = net.neighboursWeights(u);
+      std::vector<float> neighW = net.neighborsWeights(u);
       float wghtS = accumulate(neighW.begin(), neighW.end(), 0.);
       for (int vIndex = 0; vIndex < neigh.size(); vIndex++) {
         hh[neigh[vIndex]] = neighW[vIndex] / wghtS;

@@ -27,8 +27,8 @@ public:
 
   void randomErdosRenyiNetwork(int n, float p);
 
-  vector<int> neighbours(int u);
-  vector<float> neighboursWeights(int u);
+  vector<int> neighbors(int u);
+  vector<float> neighborsWeights(int u);
   pair<int, int> getEdge(int uv);
   int getRdLocation(int u);
   void display();

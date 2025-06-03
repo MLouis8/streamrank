@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -86,7 +87,7 @@ void tempoNetwork::initTimeEvents() {
   _events = events;
 }
 
-int tempoNetwork::timeToEventId(float t) {
+int tempoNetwork::timeToE(float t) {
   Event tEvent = Event(t);
   int i = 0;
   while (_events[i] <= tEvent) {
@@ -114,14 +115,14 @@ bool tempoNetwork::checkEdgeAtEvent(int u, int v, int event) {
   return false;
 }
 
-int tempoNetwork::getNodeVanishEventId(int u, int k) {
+int tempoNetwork::nodeVanishE(int u, int k) {
   while (find(_nodeEvents[k].begin(), _nodeEvents[k].end(), u) !=
          _nodeEvents[k].end())
     k++;
   return k;
 }
 
-float tempoNetwork::getNodeVanishT(int u, float t) {
+float tempoNetwork::nodeVanishT(int u, float t) {
   for (auto itv : _W[u]) {
     if (itv.first <= t && itv.second > t)
       return itv.second;
@@ -129,7 +130,7 @@ float tempoNetwork::getNodeVanishT(int u, float t) {
   return t;
 }
 
-float tempoNetwork::getNodeAppearT(int u, float t) {
+float tempoNetwork::nodeAppearT(int u, float t) {
   for (auto itv : _W[u]) {
     if (itv.first <= t && itv.second > t)
       return itv.first;
@@ -137,34 +138,30 @@ float tempoNetwork::getNodeAppearT(int u, float t) {
   return t;
 }
 
-vector<int> tempoNetwork::getInstantEventNeighbours(int u, int eventId) {
-  vector<int> instantNeighbours;
-  for (auto edge : _edgeEvents[eventId]) {
+vector<int> tempoNetwork::instENeighbors(int u, int e) {
+  vector<int> instNeighbors;
+  for (auto edge : _edgeEvents[e]) {
     if (edge.first == u)
-      instantNeighbours.push_back(edge.second);
+      instNeighbors.push_back(edge.second);
     if (edge.second == u)
-      instantNeighbours.push_back(edge.first);
+      instNeighbors.push_back(edge.first);
   }
-  return instantNeighbours;
+  return instNeighbors;
 }
 
-vector<int> tempoNetwork::getInstantNeighbours(int u, float t) {
-  return getInstantEventNeighbours(u, timeToEventId(t));
+vector<int> tempoNetwork::instNeighbors(int u, float t) {
+  return instENeighbors(u, timeToE(t));
 }
 
-FNeighbourhood tempoNetwork::getFutureNeighbours(int u, int idEvent) {
-  int vanishId = getNodeVanishEventId(u, idEvent);
-  FNeighbourhood res;
-  for (int i = idEvent; i < vanishId; i++) {
-    for (int neighbour : getInstantEventNeighbours(u, i)) {
-      if (res.find(neighbour) == res.end()) {
-        res[neighbour] = {{i, i + 1}};
+Fneighborhood tempoNetwork::directFutureNeighbors(int u, int e) {
+  int vanishE = nodeVanishE(u, e);
+  Fneighborhood res;
+  for (int i = e; i < vanishE; i++) {
+    for (int neighbor : instENeighbors(u, i)) {
+      if (res.find(neighbor) == res.end()) {
+        res[neighbor] = {i};
       } else {
-        if (res[neighbour].back().second == i) {
-          res[neighbour].back().second = i + 1;
-        } else {
-          res[neighbour].push_back({i, i + 1});
-        }
+        res[neighbor].push_back(i);
       }
     }
   }
@@ -192,7 +189,9 @@ DTNode tempoNetwork::getRdTempoNode(DTNode prevLoc) {
 int tempoNetwork::getRdLocation(int t) {
   random_device rd;
   mt19937 gen(rd());
-  uniform_int_distribution<> dis(0, _nodeEvents[t].size() - 1);
+  if (t >= _nodeEvents.size())
+    throw invalid_argument("Parameter t is out of bounds in getRdLocation");
+  uniform_int_distribution<int> dis(0, _nodeEvents[t].size() - 1);
   return _nodeEvents[t][dis(gen)];
 }
 
