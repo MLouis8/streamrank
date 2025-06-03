@@ -19,6 +19,10 @@ public:
                float tStart, float tEnd);
   tempoNetwork(float tStart, float tEnd, int n, vector<TimeItvs> W,
                unordered_map<string, TimeItvs> E);
+  tempoNetwork(float tStart, float tEnd, int n, vector<vector<int>> nodeEvents,
+               vector<vector<pair<int, int>>> edgeEvents)
+      : _tStart(tStart), _tEnd(tEnd), _n(n), _nodeEvents(nodeEvents),
+        _edgeEvents(edgeEvents) {}
   float startTime() { return _tStart; }
   float endTime() { return _tEnd; }
   int size() { return _n; }
@@ -26,6 +30,8 @@ public:
   TimeItvs getTimeItvs(int u, int v);
   float getEventVal(int e) { return _events[e].val(); }
   vector<vector<int>> &getNodeEvents() { return _nodeEvents; }
+  vector<vector<pair<int, int>>> &getEdgeEvents() { return _edgeEvents; }
+  int nbEvents() { return _events.size(); }
 
   /**
    * Generate the tempoNetwork attributes from an aglomerated Network and a time

@@ -3,95 +3,115 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "include/fileHandler.hpp"
-#include "include/strHandler.hpp"
 
-tempoNetwork readStreamFile(const std::string &filename) {
-  std::ifstream file(filename);
+using namespace std;
 
-  if (!file.is_open()) {
-    throw std::invalid_argument("Error opening file: " + filename);
+tempoNetwork readStreamFile(const string &filename) {
+  ifstream ifile(filename);
+
+  if (!ifile.is_open()) {
+    throw invalid_argument("Error opening file: " + filename);
   }
 
   // Read the first line: tStart and tEnd
   float tStart, tEnd;
-  file >> tStart >> tEnd;
+  ifile >> tStart >> tEnd;
 
   // Read the second line: n
   int n;
-  file >> n;
+  ifile >> n;
 
-  // Read the next n lines into W
-  std::vector<TimeItvs> W;
-  W.assign(n, {});
-  for (int i = 0; i < n; ++i) {
-    int nodeId;
-    file >> nodeId;
+  // Read the third line: nbEvents
+  int nbEvents;
+  ifile >> nbEvents;
 
-    std::string line;
-    std::getline(file, line); // Read the rest of the line
-    std::istringstream iss(line);
-    float value1, value2;
-
-    while (iss >> value1 >> value2) {
-      W[nodeId].push_back({value1, value2});
+  // Read the next nbEvents lines into _nodeEvents
+  vector<vector<int>> nodeEvents;
+  for (int i = 0; i < nbEvents; i++) {
+    string line;
+    vector<int> nodes;
+    getline(ifile, line); // read the line
+    istringstream iss(line);
+    int node;
+    while (iss >> node) {
+      nodes.push_back(node);
     }
+    nodeEvents.push_back(nodes);
   }
 
-  // Read the remaining lines into E
-  std::unordered_map<std::string, TimeItvs> E;
-  std::string line;
-  while (std::getline(file, line)) {
-    std::istringstream iss(line);
-    int nodeId1, nodeId2;
-    iss >> nodeId1 >> nodeId2;
-
-    TimeItvs intervals;
-    float value1, value2;
-
-    while (iss >> value1 >> value2) {
-      intervals.push_back({value1, value2});
+  // Read the next nbEvents lines into _edgeEvents
+  vector<vector<pair<int, int>>> edgeEvents;
+  for (int i = 0; i < nbEvents; i++) {
+    string line;
+    vector<pair<int, int>> edges;
+    getline(ifile, line); // read the line
+    istringstream iss(line);
+    int n1, n2;
+    while (iss >> n1 >> n2) {
+      edges.push_back({n1, n2});
     }
-
-    E[pairToStr({nodeId1, nodeId2})] = intervals;
+    edgeEvents.push_back(edges);
   }
 
-  file.close();
-  tempoNetwork net = tempoNetwork(tStart, tEnd, n, W, E);
-  return net;
+  ifile.close();
+  tempoNetwork tnet = tempoNetwork(tStart, tEnd, n, nodeEvents, edgeEvents);
+  return tnet;
 }
 
-// int main() {
-//   std::string filename = "example.stream";
-//   StreamData data = readStreamFile(filename);
+void writeTempoNetwork(tempoNetwork &tnet, string name) {
+  ofstream ofile;
+  ofile.open(name + ".stream");
+  ofile << tnet.startTime() << ' ' << tnet.endTime() << '\n';
+  ofile << tnet.size() << '\n';
+  ofile << tnet.nbEvents() << '\n';
+  for (auto nodeEvent : tnet.getNodeEvents()) {
+    for (auto e : nodeEvent)
+      ofile << e << ' ';
+    ofile << '\n';
+  }
+  for (auto edgeEvent : tnet.getEdgeEvents()) {
+    for (auto e : edgeEvent)
+      ofile << e.first << ' ' << e.second << ' ';
+    ofile << '\n';
+  }
+  ofile.close();
+}
 
-//   std::cout << "tStart: " << data.tStart << std::endl;
-//   std::cout << "tEnd: " << data.tEnd << std::endl;
-//   std::cout << "n: " << data.n << std::endl;
+// Read the next n lines into W
+// vector<TimeItvs> W;
+// W.assign(n, {});
+// for (int i = 0; i < n; ++i) {
+//   int nodeId;
+//   file >> nodeId;
 
-//   // Print W
-//   std::cout << "W:" << std::endl;
-//   for (int i = 0; i < data.n; ++i) {
-//     std::cout << "Node " << i << ": ";
-//     for (const auto &pair : data.W[i]) {
-//       std::cout << "(" << pair.first << ", " << pair.second << ") ";
-//     }
-//     std::cout << std::endl;
+//   string line;
+//   getline(file, line); // Read the rest of the line
+//   istringstream iss(line);
+//   float value1, value2;
+
+//   while (iss >> value1 >> value2) {
+//     W[nodeId].push_back({value1, value2});
+//   }
+// }
+
+// // Read the remaining lines into E
+// unordered_map<string, TimeItvs> E;
+// string line;
+// while (getline(file, line)) {
+//   istringstream iss(line);
+//   int nodeId1, nodeId2;
+//   iss >> nodeId1 >> nodeId2;
+
+//   TimeItvs intervals;
+//   float value1, value2;
+
+//   while (iss >> value1 >> value2) {
+//     intervals.push_back({value1, value2});
 //   }
 
-//   // Print E
-//   std::cout << "E:" << std::endl;
-//   for (const auto &entry : data.E) {
-//     std::cout << "Nodes (" << entry.first.first << ", " << entry.first.second
-//               << "): ";
-//     for (const auto &pair : entry.second) {
-//       std::cout << "(" << pair.first << ", " << pair.second << ") ";
-//     }
-//     std::cout << std::endl;
-//   }
-
-//   return 0;
+//   E[pairToStr({nodeId1, nodeId2})] = intervals;
 // }

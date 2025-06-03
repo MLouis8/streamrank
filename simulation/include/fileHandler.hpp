@@ -7,6 +7,6 @@
 
 tempoNetwork readStreamFile(const std::string &filename);
 
-void writeTempoNetwork(tempoNetwork tnet);
+void writeTempoNetwork(tempoNetwork &tnet);
 
 #endif // FILEHANDLER_HPP
