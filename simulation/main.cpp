@@ -1,8 +1,10 @@
+#include "include/fileHandler.hpp"
 #include "include/matrix.hpp"
 #include "include/network.hpp"
 #include "include/pagerank.hpp"
 #include "include/randomWalk.hpp"
 #include "include/rdLib.hpp"
+#include "include/temporalNetwork.hpp"
 #include <iostream>
 #include <numeric>
 #include <stdexcept>
@@ -62,27 +64,25 @@ void expApproxBounds() {}
  */
 void approComputation() {}
 
-int main(int argc, char *argv[]) {
-
+/**
+ * Generate a temporal network and saves it
+ */
+void genTempoNet(string name) {
   int n = 10;
-  int nbWalkers = 1;
+
   float p = 0.6;
-  int nbSteps = 9; // 100;
   float tStart = 0.;
   float tEnd = 10.;
-  float eps = 0.00001;
-  float alpha = 0.85;
+
   int sumNodes = 80;
   int sumEdges = 200;
   int nbEvents = 10;
 
-  cout << "Graph parameters:\n";
-  cout << "n: " << n << ", P(edge): " << p;
-  cout << ", t_start: " << tStart << ", t_end: " << tEnd << '\n';
-  cout << "Random Walk parameters:\n";
-  cout << "nb walkers: " << nbWalkers << ", nb steps:" << nbSteps << '\n';
-
-  // Temporal network generation
+  // cout << "Graph parameters:\n";
+  // cout << "n: " << n << ", P(edge): " << p;
+  // cout << ", t_start: " << tStart << ", t_end: " << tEnd << '\n';
+  // cout << "Random Walk parameters:\n";
+  // cout << "nb walkers: " << nbWalkers << ", nb steps:" << nbSteps << '\n';
   Network agloNet(n, p, sumNodes, sumEdges, nbEvents);
   agloNet.checkConsistency();
   agloNet.display();
@@ -91,15 +91,27 @@ int main(int argc, char *argv[]) {
   vector<int> nts = rdTimeSeries(sumNodes, nbEvents, n);
   vector<int> ets = rdTimeSeries(sumEdges, nbEvents, agloNet.nbEdges() / 2);
   tempoNetwork tnet(agloNet, nts, ets, tStart, tEnd);
+  writeTempoNetwork(tnet, name);
   cout << "\nTemporal Network generated\n";
-  auto h = [](float x) { return exp(-x); };
-  vector<vector<int>> rdWalk =
-      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
+}
+
+int main(int argc, char *argv[]) {
+  int nbWalkers = 1;
+  int nbSteps = 9; // 100;
+  float eps = 0.00001;
+  float alpha = 0.85;
+  tempoNetwork tnet = readStreamFile("../data/test.stream");
+
+  // auto h = [](float x) { return exp(-x); };
+  // vector<vector<int>> rdWalk =
+  //     randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h,
+  //     1);
 
   // cout << "\nRandom walk done, now the results:\n";
   // displayResults(rdWalk, tnet.size(), tnet.getNodeEvents());
   // cout << "\nNodes present at last event: ";
-  // for (auto node : tnet.getNodeEvents()[tnet.getNodeEvents().size() - 1])
+  // for (auto node : tnet.getNodeEvents()[tnet.getNodeEvents().size() -
+  // 1])
   //   cout << node << " ";
   // cout << '\n';
   // cout << "\nWalkers positions at last event: ";
