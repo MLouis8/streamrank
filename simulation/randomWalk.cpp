@@ -38,16 +38,19 @@ vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
     walkersPositions.push_back({startPos});
     walkersList.push_back(Walker<DTNode>(i, {startPos, 0}));
   }
-
-  for (int s = 1; s < nbSteps; s++) {
+  for (int s = 0; s < nbSteps; s++) {
     for (int i = 0; i < nbWalkers; i++) {
+      if (walkersList[i].pos().second >= tnet.nbEvents() - 1) {
+        cout << "\nEnd\n";
+        continue;
+      }
       DTNode newLoc;
       switch (stepType) {
       // case 0: // DTRW
       //   newLoc = walkersList[i].step(tnet, alpha);
       //   break;
-      case 1:            // approx
-        newLoc = {0, 0}; // walkersList[i].approxStep(tnet, alpha, h);
+      case 1: // approx
+        newLoc = walkersList[i].approxStep(tnet, alpha, h);
         break;
       case 2: // upper bound
         newLoc = walkersList[i].upperBound(tnet, alpha, h);

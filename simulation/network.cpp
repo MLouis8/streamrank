@@ -18,7 +18,7 @@ Network::Network(int n, float p) {
 Network::Network(int n, float p, int vSumWt, int eSumWt, int nbEvents) {
   randomErdosRenyiNetwork(n, p);
   _n = n;
-  for (int i = 0; i < n; i++)
+  for (int i = 0; i < _nodeWeight.size(); i++)
     _nodeWeight[i] = 0;
   for (int j = 0; j < _adjacencyWeight.size(); j++)
     _adjacencyWeight[j] = 0;

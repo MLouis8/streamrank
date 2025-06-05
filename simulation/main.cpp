@@ -67,17 +67,8 @@ void approComputation() {}
 /**
  * Generate a temporal network and saves it
  */
-void genTempoNet(string name) {
-  int n = 10;
-
-  float p = 0.6;
-  float tStart = 0.;
-  float tEnd = 10.;
-
-  int sumNodes = 80;
-  int sumEdges = 200;
-  int nbEvents = 10;
-
+void genTempoNet(int n, float p, float tStart, float tEnd, int sumNodes,
+                 int sumEdges, int nbEvents, string name) {
   // cout << "Graph parameters:\n";
   // cout << "n: " << n << ", P(edge): " << p;
   // cout << ", t_start: " << tStart << ", t_end: " << tEnd << '\n';
@@ -96,16 +87,16 @@ void genTempoNet(string name) {
 }
 
 int main(int argc, char *argv[]) {
+  // genTempoNet(10, 0.6, 0., 10., 80, 200, 10, "test");
   int nbWalkers = 1;
-  int nbSteps = 9; // 100;
+  int nbSteps = 10; // 100;
   float eps = 0.00001;
   float alpha = 0.85;
   tempoNetwork tnet = readStreamFile("../data/test.stream");
-
-  // auto h = [](float x) { return exp(-x); };
-  // vector<vector<int>> rdWalk =
-  //     randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h,
-  //     1);
+  cout << "\nStream graph loaded\n";
+  auto h = [](float x) { return exp(-x); };
+  vector<vector<int>> rdWalk =
+      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
 
   // cout << "\nRandom walk done, now the results:\n";
   // displayResults(rdWalk, tnet.size(), tnet.getNodeEvents());

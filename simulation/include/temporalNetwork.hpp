@@ -31,7 +31,7 @@ public:
   float getEventVal(int e) { return _events[e].val(); }
   vector<vector<int>> &getNodeEvents() { return _nodeEvents; }
   vector<vector<pair<int, int>>> &getEdgeEvents() { return _edgeEvents; }
-  int nbEvents() { return _events.size(); }
+  int nbEvents() { return _nodeEvents.size(); }
 
   /**
    * Generate the tempoNetwork attributes from an aglomerated Network and a time

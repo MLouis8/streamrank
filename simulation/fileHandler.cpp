@@ -28,6 +28,8 @@ tempoNetwork readStreamFile(const string &filename) {
   // Read the third line: nbEvents
   int nbEvents;
   ifile >> nbEvents;
+  string emptyLine;
+  getline(ifile, emptyLine);
 
   // Read the next nbEvents lines into _nodeEvents
   vector<vector<int>> nodeEvents;

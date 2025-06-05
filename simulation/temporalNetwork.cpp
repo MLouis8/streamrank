@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -116,8 +115,9 @@ bool tempoNetwork::checkEdgeAtEvent(int u, int v, int event) {
 }
 
 int tempoNetwork::nodeVanishE(int u, int k) {
-  while (find(_nodeEvents[k].begin(), _nodeEvents[k].end(), u) !=
-         _nodeEvents[k].end())
+  while (k < _nodeEvents.size() &&
+         find(_nodeEvents[k].begin(), _nodeEvents[k].end(), u) !=
+             _nodeEvents[k].end())
     k++;
   return k;
 }
@@ -157,7 +157,8 @@ Fneighborhood tempoNetwork::directFutureNeighbors(int u, int e) {
   int vanishE = nodeVanishE(u, e);
   Fneighborhood res;
   for (int i = e; i < vanishE; i++) {
-    for (int neighbor : instENeighbors(u, i)) {
+    vector<int> ineigh = instENeighbors(u, i);
+    for (int neighbor : ineigh) {
       if (res.find(neighbor) == res.end()) {
         res[neighbor] = {i};
       } else {
@@ -189,17 +190,14 @@ DTNode tempoNetwork::getRdTempoNode(DTNode prevLoc) {
 int tempoNetwork::getRdLocation(int t) {
   random_device rd;
   mt19937 gen(rd());
-  if (t >= _nodeEvents.size())
-    throw invalid_argument("Parameter t is out of bounds in getRdLocation");
   uniform_int_distribution<int> dis(0, _nodeEvents[t].size() - 1);
   return _nodeEvents[t][dis(gen)];
 }
 
 bool timeValid(TimeItvs itvs, float t) {
   for (auto itv : itvs) {
-    if (itv.first <= t && itv.second >= t) {
+    if (itv.first <= t && itv.second >= t)
       return true;
-    }
   }
   return false;
 }
