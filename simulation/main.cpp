@@ -77,26 +77,26 @@ void genTempoNet(int n, float p, float tStart, float tEnd, int sumNodes,
   Network agloNet(n, p, sumNodes, sumEdges, nbEvents);
   agloNet.checkConsistency();
   agloNet.display();
-  if (nbEvents * agloNet.nbEdges() / 2 < sumEdges)
-    throw invalid_argument("sumEdges is too high.");
-  vector<int> nts = rdTimeSeries(sumNodes, nbEvents, n);
-  vector<int> ets = rdTimeSeries(sumEdges, nbEvents, agloNet.nbEdges() / 2);
-  tempoNetwork tnet(agloNet, nts, ets, tStart, tEnd);
-  writeTempoNetwork(tnet, name);
-  cout << "\nTemporal Network generated\n";
+  // if (nbEvents * agloNet.nbEdges() / 2 < sumEdges)
+  //   throw invalid_argument("sumEdges is too high.");
+  // vector<int> nts = rdTimeSeries(sumNodes, nbEvents, n);
+  // vector<int> ets = rdTimeSeries(sumEdges, nbEvents, agloNet.nbEdges() / 2);
+  // tempoNetwork tnet(agloNet, nts, ets, tStart, tEnd);
+  // writeTempoNetwork(tnet, name);
+  // cout << "\nTemporal Network generated\n";
 }
 
 int main(int argc, char *argv[]) {
-  // genTempoNet(10, 0.6, 0., 10., 80, 200, 10, "test");
-  int nbWalkers = 1;
-  int nbSteps = 10; // 100;
-  float eps = 0.00001;
-  float alpha = 0.85;
-  tempoNetwork tnet = readStreamFile("../data/test.stream");
-  cout << "\nStream graph loaded\n";
-  auto h = [](float x) { return exp(-x); };
-  vector<vector<int>> rdWalk =
-      randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
+  genTempoNet(10, 0.6, 0., 10., 80, 200, 10, "test");
+  // int nbWalkers = 1;
+  // int nbSteps = 10; // 100;
+  // float eps = 0.00001;
+  // float alpha = 0.85;
+  // tempoNetwork tnet = readStreamFile("../data/test.stream");
+  // cout << "\nStream graph loaded\n";
+  // auto h = [](float x) { return exp(-x); };
+  // vector<vector<int>> rdWalk =
+  //     randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
 
   // cout << "\nRandom walk done, now the results:\n";
   // displayResults(rdWalk, tnet.size(), tnet.getNodeEvents());

@@ -25,12 +25,12 @@ Network::Network(int n, float p, int vSumWt, int eSumWt, int nbEvents) {
   random_device rd;
   mt19937 gen(rd());
   _nodeWeight = rdTimeSeries(vSumWt, n, nbEvents);
-  vector<int> weights(_adjacencyWeight.size(), 1);
   vector<int> edgeCap;
   for (int edge = 0; edge < _adjacencyWeight.size(); edge++) {
     pair<int, int> uv = getEdge(edge);
     edgeCap.push_back(min(_nodeWeight[uv.first], _nodeWeight[uv.second]));
   }
+  vector<int> weights(_adjacencyWeight.size(), 1);
   discrete_distribution<> edgeDis(weights.begin(), weights.end());
   for (int y = 0; y < eSumWt; y++) {
     int id = edgeDis(gen);
@@ -155,4 +155,11 @@ void Network::randomErdosRenyiNetwork(int n, float p) {
   _adjacency = adjacency;
   _adjacencyWeight = adjacencyWeight;
   _nodeWeight = ndWeights;
+}
+
+vector<pair<int, int>> Network::getEdges() {
+  vector<pair<int, int>> edges;
+  for (int edge = 0; edge < _adjacency.size(); edge++)
+    edges.push_back(getEdge(edge));
+  return edges;
 }

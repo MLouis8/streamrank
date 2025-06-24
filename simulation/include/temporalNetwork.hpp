@@ -15,6 +15,17 @@ typedef unordered_map<int, vector<int>> Fneighborhood;
 
 class tempoNetwork {
 public:
+  /**
+  * To generate a random temporal network we first generate two random time
+  series for the nodes.
+  * The first series determines the number of nodes present per event,
+  * while the second one determines how many events each node is present in.
+  * Then we use the bijection between bipartite graphs and 2 time series to fix
+  the temporal nodes.
+  * Finally, we consider each time step as a graph and generate the edges
+  randomly as in a Erdos-Reyni grpah.
+  */
+  tempoNetwork(int n, int sumNodes, int sumEdges, int nbEvents, float p);
   tempoNetwork(Network aglo, vector<int> nodeTimeS, vector<int> edgeTimeS,
                float tStart, float tEnd);
   tempoNetwork(float tStart, float tEnd, int n, vector<TimeItvs> W,

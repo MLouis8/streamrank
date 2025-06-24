@@ -1,16 +1,31 @@
 #include "include/temporalNetwork.hpp"
+#include "include/network.hpp"
 #include "include/rdLib.hpp"
 #include "include/strHandler.hpp"
 
 #include <algorithm>
 #include <cassert>
-#include <numeric>
 #include <random>
 #include <stdexcept>
-#include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
+
+tempoNetwork::tempoNetwork(int n, int sumNodes, int sumEdges, int nbEvents,
+                           float p) {
+  vector<int> eventPerNodeS = rdTimeSeries(sumNodes, n, nbEvents);
+  vector<int> nodePerEventS = rdTimeSeries(sumNodes, nbEvents, n);
+  Bipartite tNodes = rdBipartiteFromDegrees(eventPerNodeS, nodePerEventS);
+  _n = eventPerNodeS.size();
+  _nodeEvents = vector<vector<int>>(nbEvents);
+  for (auto e : tNodes) {
+    _nodeEvents[e.second].push_back(e.first);
+  }
+  _edgeEvents = vector<vector<pair<int, int>>>(nbEvents);
+  for (int i = 0; i < nbEvents; i++) {
+    Network currentNet(_nodeEvents[i].size(), p);
+    _edgeEvents[i] = currentNet.getEdges();
+  }
+}
 
 tempoNetwork::tempoNetwork(Network aglo, vector<int> nodeTimeS,
                            vector<int> edgeTimeS, float tStart, float tEnd) {

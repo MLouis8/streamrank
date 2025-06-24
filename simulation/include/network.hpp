@@ -33,6 +33,7 @@ public:
   int getRdLocation(int u);
   void display();
   void checkConsistency();
+  vector<pair<int, int>> getEdges();
 
 private:
   int _n;
