@@ -67,7 +67,7 @@ tempoNetwork readStreamFile(const string &filename) {
 void writeTempoNetwork(tempoNetwork &tnet, string filename) {
   ofstream ofile;
   ofile.open(filename + ".stream");
-  ofile << tnet.startTime() << ' ' << tnet.endTime() << '\n';
+  // ofile << tnet.startTime() << ' ' << tnet.endTime() << '\n';
   ofile << tnet.size() << '\n';
   ofile << tnet.nbEvents() << '\n';
   for (auto nodeEvent : tnet.getNodeEvents()) {
@@ -77,7 +77,7 @@ void writeTempoNetwork(tempoNetwork &tnet, string filename) {
   }
   for (auto edgeEvent : tnet.getEdgeEvents()) {
     for (auto e : edgeEvent)
-      ofile << e.first << ' ' << e.second << ' ';
+      ofile << '(' << e.first << ' ' << e.second << ") ";
     ofile << '\n';
   }
   ofile.close();

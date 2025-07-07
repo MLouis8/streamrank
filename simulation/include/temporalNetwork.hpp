@@ -24,8 +24,15 @@ public:
   the temporal nodes.
   * Finally, we consider each time step as a graph and generate the edges
   randomly as in a Erdos-Reyni grpah.
+  * n is the number of different nodes
+  * sumNodes is the number of temporal nodes (presence of a node during an event
+  count as 1)
+  * sumEdges is the number of temporal edges (presence of an edge during an
+  event count as 1)
+  * p is the probability that at event x there is a link between temporal node a
+  and b (Erdos-Reyni like)
   */
-  tempoNetwork(int n, int sumNodes, int sumEdges, int nbEvents, float p);
+  tempoNetwork(int n, int sumNodes, int nbEvents, float p);
   tempoNetwork(Network aglo, vector<int> nodeTimeS, vector<int> edgeTimeS,
                float tStart, float tEnd);
   tempoNetwork(float tStart, float tEnd, int n, vector<TimeItvs> W,

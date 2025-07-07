@@ -67,27 +67,17 @@ void approComputation() {}
 /**
  * Generate a temporal network and saves it
  */
-void genTempoNet(int n, float p, float tStart, float tEnd, int sumNodes,
-                 int sumEdges, int nbEvents, string name) {
-  // cout << "Graph parameters:\n";
-  // cout << "n: " << n << ", P(edge): " << p;
-  // cout << ", t_start: " << tStart << ", t_end: " << tEnd << '\n';
-  // cout << "Random Walk parameters:\n";
-  // cout << "nb walkers: " << nbWalkers << ", nb steps:" << nbSteps << '\n';
-  Network agloNet(n, p, sumNodes, sumEdges, nbEvents);
-  agloNet.checkConsistency();
-  agloNet.display();
-  // if (nbEvents * agloNet.nbEdges() / 2 < sumEdges)
-  //   throw invalid_argument("sumEdges is too high.");
-  // vector<int> nts = rdTimeSeries(sumNodes, nbEvents, n);
-  // vector<int> ets = rdTimeSeries(sumEdges, nbEvents, agloNet.nbEdges() / 2);
-  // tempoNetwork tnet(agloNet, nts, ets, tStart, tEnd);
-  // writeTempoNetwork(tnet, name);
-  // cout << "\nTemporal Network generated\n";
+void genTempoNet(int n, int sumNodes, float p, int nbEvents, string name) {
+  cout << "Graph parameters:\n";
+  cout << "n: " << n << ", p: " << p;
+  cout << ", sumNodes: " << sumNodes << '\n';
+  tempoNetwork tnet(n, sumNodes, 10, 0.5);
+  writeTempoNetwork(tnet, name);
+  cout << "\nTemporal Network generated\n";
 }
 
 int main(int argc, char *argv[]) {
-  genTempoNet(10, 0.6, 0., 10., 80, 200, 10, "test");
+  genTempoNet(10, 70, 0.6, 10, "test0");
   // int nbWalkers = 1;
   // int nbSteps = 10; // 100;
   // float eps = 0.00001;

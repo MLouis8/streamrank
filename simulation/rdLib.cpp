@@ -49,14 +49,12 @@ vector<int> rdTimeSeries(int sum, int nbEvents, int nbObj) {
   vector<int> res(nbEvents, 0);
   random_device rd;
   mt19937 gen(rd());
-  vector<int> cap(nbEvents, nbObj);
   vector<int> w(nbEvents, 1);
   discrete_distribution<> dis(w.begin(), w.end());
   for (int i = 0; i < sum; i++) {
     int id = dis(gen);
     res[id]++;
-    cap[id]--;
-    if (cap[id] == 0) {
+    if (res[id] == nbObj) {
       w[id] = 0;
       dis = discrete_distribution<>(w.begin(), w.end());
     }

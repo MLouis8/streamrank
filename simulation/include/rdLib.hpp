@@ -24,9 +24,9 @@ Bipartite rdBipartiteFromDegrees(vector<int> upDeg, vector<int> downDeg);
  * Generates a random time series in the form of an integer vector.
  * Index i contains the value of the time series at time i
  * @param
- *    int sum is the total sum of values at each time instant
+ *    sum is the sum of the vector values'
  *    nbEvents is the length of the time series
- *    nbObj is the upper bound for the value of a single instant
+ *    nbObj is the upper bound of each single vector value
  */
 vector<int> rdTimeSeries(int sum, int nbEvents, int nbObj);
 

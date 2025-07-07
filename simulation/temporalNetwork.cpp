@@ -10,8 +10,7 @@
 #include <utility>
 #include <vector>
 
-tempoNetwork::tempoNetwork(int n, int sumNodes, int sumEdges, int nbEvents,
-                           float p) {
+tempoNetwork::tempoNetwork(int n, int sumNodes, int nbEvents, float p) {
   vector<int> eventPerNodeS = rdTimeSeries(sumNodes, n, nbEvents);
   vector<int> nodePerEventS = rdTimeSeries(sumNodes, nbEvents, n);
   Bipartite tNodes = rdBipartiteFromDegrees(eventPerNodeS, nodePerEventS);
@@ -23,7 +22,10 @@ tempoNetwork::tempoNetwork(int n, int sumNodes, int sumEdges, int nbEvents,
   _edgeEvents = vector<vector<pair<int, int>>>(nbEvents);
   for (int i = 0; i < nbEvents; i++) {
     Network currentNet(_nodeEvents[i].size(), p);
-    _edgeEvents[i] = currentNet.getEdges();
+    vector<pair<int, int>> rawEdges = currentNet.getEdges();
+    for (auto e : rawEdges)
+      _edgeEvents[i].push_back(
+          {_nodeEvents[i][e.first], _nodeEvents[i][e.second]});
   }
 }
 
