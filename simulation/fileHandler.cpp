@@ -77,7 +77,7 @@ void writeTempoNetwork(tempoNetwork &tnet, string filename) {
   }
   for (auto edgeEvent : tnet.getEdgeEvents()) {
     for (auto e : edgeEvent)
-      ofile << '(' << e.first << ' ' << e.second << ") ";
+      ofile << '(' << e.first << ", " << e.second << ") ";
     ofile << '\n';
   }
   ofile.close();

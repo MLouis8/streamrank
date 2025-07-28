@@ -29,8 +29,7 @@ vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
 // rmv while in actual rd Loc
 vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
                                          float alpha, tempoNetwork &tnet,
-                                         function<float(float)> h,
-                                         int stepType) {
+                                         function<float(float)> h) {
   vector<vector<int>> walkersPositions;
   vector<Walker<DTNode>> walkersList;
   for (int i = 0; i < nbWalkers; i++) {
@@ -40,26 +39,10 @@ vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
   }
   for (int s = 0; s < nbSteps; s++) {
     for (int i = 0; i < nbWalkers; i++) {
-      if (walkersList[i].pos().second >= tnet.nbEvents() - 1) {
-        cout << "\nEnd\n";
-        continue;
+      if (walkersList[i].pos().second < tnet.nbEvents() - 1) {
+        DTNode newLoc = walkersList[i].approxStep(tnet, alpha, h);
+        walkersPositions[i].push_back(newLoc.first);
       }
-      DTNode newLoc;
-      switch (stepType) {
-      // case 0: // DTRW
-      //   newLoc = walkersList[i].step(tnet, alpha);
-      //   break;
-      case 1: // approx
-        newLoc = walkersList[i].approxStep(tnet, alpha, h);
-        break;
-      case 2: // upper bound
-        newLoc = walkersList[i].upperBound(tnet, alpha, h);
-        break;
-      case 3: // lower bound
-        newLoc = walkersList[i].lowerBound(tnet, alpha, h);
-        break;
-      };
-      walkersPositions[i].push_back(newLoc.first);
     }
   }
   return walkersPositions;

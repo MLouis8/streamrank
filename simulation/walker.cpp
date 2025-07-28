@@ -21,21 +21,6 @@ template <> int Walker<int>::step(Network &net, float alpha) {
   return _pos;
 }
 
-// template <>
-// DTNode Walker<DTNode>::step(tempoNetwork &tnet, float alpha,
-//                             function<float(float)> h) {
-//   random_device rd;
-//   default_random_engine eng(rd());
-//   Fneighborhood fnhb = tnet.getFutureneighbors(_pos.first, _pos.second);
-
-//   uniform_real_distribution<float> jumpDis(0, 1);
-//   if (jumpDis(eng) > alpha || fnhb.size() == 0) {
-//     _pos = {tnet.getRdLocation(_pos.second), _pos.second + 1};
-//   } else {
-//   }
-//   return _pos;
-// }
-
 template <>
 DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
                                   function<float(float)> h) {
@@ -60,45 +45,44 @@ DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
     int v = neighbors[dis1(eng)];
 
     // select an event
-    // int uEnd = tnet.nodeVanishE(_pos.first, _pos.second);
-    // int vStart = dfnhb[v][0];
-    // int vEnd = dfnhb[v][0];
-    // for (auto e : dfnhb[v]) {
-    //   if (vEnd >= _pos.second)
-    //     break;
-    //   if (e - vEnd > 1)
-    //     vStart = e;
-    //   vEnd = e;
+    int uEnd = tnet.nodeVanishE(_pos.first, _pos.second);
+    int vStart = dfnhb[v][0];
+    int vEnd = dfnhb[v].back(); // be careful maybe v lifespan have gaps
+                                // between uStart and uEnd
+    vector<int> possibleEvents;
+    vector<float> w2;
+    float tk1 = tnet.getEventVal(_pos.second + 1);
+    for (int l = _pos.second + 1; l <= vEnd; l++) {
+      possibleEvents.push_back(l);
+      float tl = tnet.getEventVal(l);
+      float w = 0;
+      for (int i = _pos.second; i < l; i++) {
+        if (i <= uEnd && l <= tnet.nodeVanishE(v, i) &&
+            tnet.checkEdgeAtEvent(_pos.first, v, i) &&
+            tnet.checkEdgeAtEvent(_pos.first, v, i + 1)) {
+          float div = 0;
+          for (int j = i; j < tnet.nodeVanishE(v, l); j++) {
+            float tj = tnet.getEventVal(j);
+            float tj1 = tnet.getEventVal(j + 1);
+            div += (tj1 - tj) * h(tj - tk1);
+          }
+          float ti = tnet.getEventVal(i);
+          float ti1 = tnet.getEventVal(i + 1);
+          w += (ti1 - ti) / div;
+        }
+      }
+      w = w * h(tl - tk1);
+      cout << "\nValue of w is: " << w << " for l " << l;
+      w2.push_back(w);
+    }
+    // if (possibleEvents.size() == 0) {
+    //   _pos = {v, _pos.second + 1};
+    //   return _pos;
     // }
-    // vector<int> possibleEvents;
-    // vector<float> w2;
-    // float tk1 = tnet.getEventVal(_pos.second + 1);
-    // for (int l = _pos.second + 1; l <= vEnd; l++) {
-    //   possibleEvents.push_back(l);
-    //   float tl = tnet.getEventVal(l);
-    //   float w = 0.;
-    //   for (int i = _pos.second; i < l; i++) {
-    //     if (i <= uEnd && vStart <= i &&
-    //         tnet.checkEdgeAtEvent(_pos.first, v, i) &&
-    //         tnet.checkEdgeAtEvent(_pos.first, v, i + 1)) {
-    //       float div = 0;
-    //       for (int j = i + 1;; j++) {
-    //         float tj1 = tnet.getEventVal(j + 1);
-    //         float tj = tnet.getEventVal(j);
-    //         div += (tj1 - tj) * h(tj - tk1);
-    //       }
-    //       float ti1 = tnet.getEventVal(i + 1);
-    //       float ti = tnet.getEventVal(i);
-    //       w += (ti1 - ti) / div;
-    //     }
-    //   }
-    //   w = w * h(tl - tk1);
-    //   w2.push_back(w);
-    // }
-    // discrete_distribution<> dis2(w2.begin(), w2.end());
-    // int t = possibleEvents[dis2(eng)];
-    cout << "\nnormal: v: " << v << ", t " << _pos.second + 1;
-    _pos = {v, _pos.second + 1}; // t};
+    discrete_distribution<> dis2(w2.begin(), w2.end());
+    int t = possibleEvents[dis2(eng)];
+    cout << "\nv: " << v << ", t " << t;
+    _pos = {v, t};
   }
   return _pos;
 }

@@ -16,8 +16,7 @@ vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
 
 vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
                                          float alpha, tempoNetwork &tnet,
-                                         function<float(float)> h,
-                                         int stepType);
+                                         function<float(float)> h);
 
 vector<float> walkersDistribution(vector<vector<int>> wlkSteps, int step,
                                   int n);

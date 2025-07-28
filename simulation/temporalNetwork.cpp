@@ -1,4 +1,5 @@
 #include "include/temporalNetwork.hpp"
+#include "include/event.hpp"
 #include "include/network.hpp"
 #include "include/rdLib.hpp"
 #include "include/strHandler.hpp"
@@ -44,6 +45,24 @@ tempoNetwork::tempoNetwork(float tStart, float tEnd, int n, vector<TimeItvs> W,
   _W = W;
   _E = E;
   initTimeEvents();
+}
+
+tempoNetwork::tempoNetwork(float tStart, float tEnd, int n,
+                           vector<vector<int>> nodeEvents,
+                           vector<vector<pair<int, int>>> edgeEvents) {
+  _tStart = tStart;
+  _tEnd = tEnd;
+  _n = n;
+  _nodeEvents = nodeEvents;
+  _edgeEvents = edgeEvents;
+  int nbEvents = _nodeEvents.size();
+  assert(nbEvents == _edgeEvents.size());
+  vector<Event> events;
+  float step = (_tEnd - _tStart) / nbEvents;
+  for (int e = 0; e < nbEvents; e++) {
+    events.push_back(Event(_tStart + step * e));
+  }
+  _events = events;
 }
 
 TimeItvs tempoNetwork::getTimeItvs(int u, int v) {
@@ -136,7 +155,7 @@ int tempoNetwork::nodeVanishE(int u, int k) {
          find(_nodeEvents[k].begin(), _nodeEvents[k].end(), u) !=
              _nodeEvents[k].end())
     k++;
-  return k;
+  return k - 1;
 }
 
 float tempoNetwork::nodeVanishT(int u, float t) {
@@ -173,7 +192,7 @@ vector<int> tempoNetwork::instNeighbors(int u, float t) {
 Fneighborhood tempoNetwork::directFutureNeighbors(int u, int e) {
   int vanishE = nodeVanishE(u, e);
   Fneighborhood res;
-  for (int i = e; i < vanishE; i++) {
+  for (int i = e; i <= vanishE; i++) {
     vector<int> ineigh = instENeighbors(u, i);
     for (int neighbor : ineigh) {
       if (res.find(neighbor) == res.end()) {

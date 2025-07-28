@@ -5,6 +5,7 @@
 #include "include/randomWalk.hpp"
 #include "include/rdLib.hpp"
 #include "include/temporalNetwork.hpp"
+#include <cmath>
 #include <iostream>
 #include <numeric>
 #include <stdexcept>
@@ -76,8 +77,54 @@ void genTempoNet(int n, int sumNodes, float p, int nbEvents, string name) {
   cout << "\nTemporal Network generated\n";
 }
 
+/**
+ * Overlapping part experiment to see if negligeable or not
+ */
+void overlappingExperiment() {
+  // part 1 on basic link stream
+  vector<vector<int>> nodeEvents1 = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1},
+                                     {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}};
+  vector<vector<pair<int, int>>> edgeEvents1 = {
+      {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}},
+      {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}};
+  tempoNetwork tnet1(0, 10, 2, nodeEvents1, edgeEvents1);
+  // auto h = [](float x) { return x; };
+  auto h = [](float x) { return exp(-x); };
+  vector<vector<int>> walk = randomWalkSimulation(1000, 10, 0.001, 1, tnet1, h);
+  cout << '\n';
+  for (auto walker : walk) {
+    for (auto step : walker)
+      cout << step << ' ';
+    cout << '\n';
+  }
+  // part 2 on more complex link stream
+  // vector<vector<int>> nodeEvents2;
+  // vector<vector<pair<int, int>>> edgeEvents2;
+  // vector<int> nodes;
+  // for (int i = 0; i < 100; i++)
+  //   nodes.push_back(i);
+  // vector<pair<int, int>> edges;
+  // for (int i = 0; i < 100; i++) {
+  //   for (int j = i + 1; j < 100; j++) {
+  //     edges.push_back({i, j});
+  //   }
+  // }
+  // for (int i = 0; i < 10; i++) {
+  //   nodeEvents2.push_back(nodes);
+  //   edgeEvents2.push_back(edges)
+  // }
+
+  // part 3 on random stream graph
+}
+
+/**
+ * Real data set experiment to track the evolution on real stream graph
+ */
+void simulation() {}
+
 int main(int argc, char *argv[]) {
-  genTempoNet(10, 70, 0.6, 10, "test0");
+  overlappingExperiment();
+  // genTempoNet(10, 70, 0.6, 10, "test0");
   // int nbWalkers = 1;
   // int nbSteps = 10; // 100;
   // float eps = 0.00001;
