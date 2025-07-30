@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 #include <random>
 #include <stdexcept>
 #include <utility>

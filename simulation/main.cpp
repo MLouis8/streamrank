@@ -55,13 +55,7 @@ void expPRConvergence(int n, float pEdge, float alpha, float eps, int nbSteps,
 }
 
 /**
- * Experimenting if the approx step stays in between the bounds defined for the
- * discrete step
- */
-void expApproxBounds() {}
-
-/**
- * Experimenting if the approx convergences towards the discrete step
+ * Experimenting approx vs discrete steps
  */
 void approComputation() {}
 
@@ -90,12 +84,12 @@ void overlappingExperiment() {
   tempoNetwork tnet1(0, 10, 2, nodeEvents1, edgeEvents1);
   // auto h = [](float x) { return x; };
   auto h = [](float x) { return exp(-x); };
-  vector<vector<int>> walk = randomWalkSimulation(1000, 10, 0.001, 1, tnet1, h);
-  cout << '\n';
+  vector<vector<pair<int, int>>> walk =
+      randomWalkSimulation(10, 10, 1, tnet1, h, 3);
   for (auto walker : walk) {
-    for (auto step : walker)
-      cout << step << ' ';
     cout << '\n';
+    for (auto step : walker)
+      cout << "(" << step.first << ", " << step.second << ") ";
   }
   // part 2 on more complex link stream
   // vector<vector<int>> nodeEvents2;

@@ -52,7 +52,7 @@ DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
     vector<int> possibleEvents;
     vector<float> w2;
     float tk1 = tnet.getEventVal(_pos.second + 1);
-    for (int l = _pos.second + 1; l <= vEnd; l++) {
+    for (int l = _pos.second + 1; l <= vEnd && l < tnet.nbEvents() - 1; l++) {
       possibleEvents.push_back(l);
       float tl = tnet.getEventVal(l);
       float w = 0;
@@ -72,16 +72,10 @@ DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
         }
       }
       w = w * h(tl - tk1);
-      cout << "\nValue of w is: " << w << " for l " << l;
       w2.push_back(w);
     }
-    // if (possibleEvents.size() == 0) {
-    //   _pos = {v, _pos.second + 1};
-    //   return _pos;
-    // }
     discrete_distribution<> dis2(w2.begin(), w2.end());
     int t = possibleEvents[dis2(eng)];
-    cout << "\nv: " << v << ", t " << t;
     _pos = {v, t};
   }
   return _pos;
@@ -99,8 +93,6 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
     _pos = {tnet.getRdLocation(_pos.second + 1), _pos.second + 1};
   } else {
     // choose v amongts the future neighbors of u
-    // here we weight each neihbor with the total size, shouldn't we weight
-    // with the actual interval size ?
     vector<float> w1;
     vector<int> neighbors;
     for (auto &[key, val] : dfnhb) {
@@ -113,29 +105,23 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
     // select an event
     int uEnd = tnet.nodeVanishE(_pos.first, _pos.second);
     int vStart = dfnhb[v][0];
-    int vEnd = dfnhb[v][0];
-    for (auto e : dfnhb[v]) {
-      if (vEnd >= _pos.second)
-        break;
-      if (e - vEnd > 1)
-        vStart = e;
-      vEnd = e;
-    }
+    int vEnd = dfnhb[v].back();
     vector<int> possibleEvents;
     vector<float> w2;
-    float tk1 = tnet.getEventVal(_pos.second + 1);
     float tk = tnet.getEventVal(_pos.second);
-    for (int l = _pos.second + 1; l <= vEnd; l++) {
+    float tk1 = tnet.getEventVal(_pos.second + 1);
+    for (int l = _pos.second + 1; l <= vEnd && l < tnet.nbEvents() - 1; l++) {
       possibleEvents.push_back(l);
       float tl = tnet.getEventVal(l);
-      float w = 0.;
+      float w = 0;
       for (int i = _pos.second; i <= l; i++) {
-        if (i <= uEnd && vStart <= i &&
+        int i1End = tnet.nodeVanishE(v, i);
+        if (i <= uEnd && l <= i1End &&
             tnet.checkEdgeAtEvent(_pos.first, v, i) &&
             tnet.checkEdgeAtEvent(_pos.first, v, i + 1)) {
           float ti1 = tnet.getEventVal(i + 1);
           float ti = tnet.getEventVal(i);
-          float ti1End = tnet.nodeVanishT(v, ti1);
+          float ti1End = tnet.getEventVal(i1End);
           float div = integral(ti1 - tk, ti1End - tk, h, 100);
           w += (ti1 - ti) / div;
         }
@@ -174,40 +160,36 @@ DTNode Walker<DTNode>::lowerBound(tempoNetwork &tnet, float alpha,
     // select an event
     int uEnd = tnet.nodeVanishE(_pos.first, _pos.second);
     int vStart = dfnhb[v][0];
-    int vEnd = dfnhb[v][0];
-    for (auto e : dfnhb[v]) {
-      if (vEnd >= _pos.second)
-        break;
-      if (e - vEnd > 1)
-        vStart = e;
-      vEnd = e;
-    }
+    int vEnd = dfnhb[v].back();
     vector<int> possibleEvents;
     vector<float> w2;
     float tk1 = tnet.getEventVal(_pos.second + 1);
-    for (int l = _pos.second + 1; l <= vEnd; l++) {
+    for (int l = _pos.second + 1; l <= vEnd && l < tnet.nbEvents() - 1; l++) {
       possibleEvents.push_back(l);
       float tl = tnet.getEventVal(l);
-      float w = 0.;
+      float w = 1;
       for (int i = _pos.second + 1; i < l; i++) {
-        if (i <= uEnd && vStart <= i &&
-            tnet.checkEdgeAtEvent(_pos.first, v, i) &&
-            tnet.checkEdgeAtEvent(_pos.first, v, i + 1)) {
-          float ti1 = tnet.getEventVal(i + 1);
-          float ti = tnet.getEventVal(i);
-          float tiEnd = tnet.nodeVanishT(v, ti);
-          float div = integral(ti - tk1, tiEnd - tk1, h, 100);
-          w += (ti1 - ti) / div;
-        }
+        int iEnd = tnet.nodeVanishE(v, i);
+        //       // if (i <= uEnd && l <= iEnd &&
+        //       tnet.checkEdgeAtEvent(_pos.first, v, i)
+        //       // &&
+        //       //     tnet.checkEdgeAtEvent(_pos.first, v, i + 1)) {
+        //       //   float ti1 = tnet.getEventVal(i + 1);
+        //       //   float ti = tnet.getEventVal(i);
+        //       //   float tiEnd = tnet.getEventVal(ti);
+        //       //   float div = integral(ti - tk1, tiEnd - tk1, h, 100);
+        //       //   w += (ti1 - ti) / div;
+        //       // }
       }
-      float tl1 = tnet.getEventVal(vEnd + 1);
-      float tk = tnet.getEventVal(_pos.second);
-      w = w * h(tl1 - tk);
+      // float tl1 = tnet.getEventVal(vEnd + 1);
+      // float tk = tnet.getEventVal(_pos.second);
+      // w = w * h(tl1 - tk);
       w2.push_back(w);
     }
-    discrete_distribution<> dis2(w2.begin(), w2.end());
-    int t = possibleEvents[dis2(eng)];
-    _pos = {v, t};
+    //   discrete_distribution<> dis2(w2.begin(), w2.end());
+    //   int t = possibleEvents[dis2(eng)];
+    //   _pos = {v, t};
+    _pos = {v, _pos.second + 1};
   }
   return _pos;
 }

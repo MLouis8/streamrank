@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 
+#include <numeric>
 #include <utility>
 #include <vector>
 
@@ -27,21 +28,34 @@ vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
 
 // change random Location to have a starting position at time 0
 // rmv while in actual rd Loc
-vector<vector<int>> randomWalkSimulation(int nbWalkers, int nbSteps, float eps,
-                                         float alpha, tempoNetwork &tnet,
-                                         function<float(float)> h) {
-  vector<vector<int>> walkersPositions;
+vector<vector<pair<int, int>>> randomWalkSimulation(int nbWalkers, int nbSteps,
+                                                    float alpha,
+                                                    tempoNetwork &tnet,
+                                                    function<float(float)> h,
+                                                    int stepType) {
+  vector<vector<pair<int, int>>> walkersPositions;
   vector<Walker<DTNode>> walkersList;
   for (int i = 0; i < nbWalkers; i++) {
     int startPos = tnet.getRdLocation(0);
-    walkersPositions.push_back({startPos});
+    walkersPositions.push_back({{startPos, 0}});
     walkersList.push_back(Walker<DTNode>(i, {startPos, 0}));
   }
   for (int s = 0; s < nbSteps; s++) {
     for (int i = 0; i < nbWalkers; i++) {
-      if (walkersList[i].pos().second < tnet.nbEvents() - 1) {
-        DTNode newLoc = walkersList[i].approxStep(tnet, alpha, h);
-        walkersPositions[i].push_back(newLoc.first);
+      if (walkersList[i].pos().second < tnet.nbEvents() - 2) {
+        DTNode newLoc;
+        switch (stepType) {
+        case 1: // approx
+          newLoc = walkersList[i].approxStep(tnet, alpha, h);
+          break;
+        case 2: // DTRW upper bound
+          newLoc = walkersList[i].upperBound(tnet, alpha, h);
+          break;
+        case 3: // DTRW lower bound
+          newLoc = walkersList[i].lowerBound(tnet, alpha, h);
+          break;
+        };
+        walkersPositions[i].push_back(newLoc);
       }
     }
   }
@@ -85,4 +99,28 @@ void displayResults(vector<vector<int>> rdWalk, int n,
   for (auto val : res)
     cout << " " << val;
   cout << '\n';
+}
+
+float meanOverlapping(vector<vector<pair<int, int>>> walk) {
+  vector<float> overlaps;
+  for (auto walker : walk) {
+    int nbOverlap = 0;
+    for (int s = 0; s < walker.size() - 1; s++) {
+      if (walker[s].second == walker[s + 1].second)
+        nbOverlap += 1;
+    }
+    overlaps.push_back(nbOverlap / static_cast<float>(walker.size()));
+  }
+  return accumulate(overlaps.begin(), overlaps.end(), 0.) / overlaps.size();
+}
+
+vector<vector<float>> streamRank(vector<vector<pair<int, int>>> walk, int n,
+                                 int nbEvents) {
+  vector<vector<float>> res(n, vector<float>(nbEvents, 0.));
+  for (auto walker : walk) {
+    for (auto step : walker) {
+      res[step.first][step.second] += 1. / walk.size();
+    }
+  }
+  return res;
 }
