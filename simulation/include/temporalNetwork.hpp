@@ -96,7 +96,11 @@ public:
    * Returns a random node present at time t
    */
   int getRdLocation(int t);
-  DTNode getRdTempoNode(DTNode prevLoc);
+
+  /**
+   * Returns a random temporal node, that is different than (u, k-1)
+   */
+  DTNode getRdTempoNode(int u, int k);
 
 private:
   float _tStart;

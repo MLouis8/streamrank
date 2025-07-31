@@ -206,22 +206,18 @@ Fneighborhood tempoNetwork::directFutureNeighbors(int u, int e) {
   return res;
 }
 
-DTNode tempoNetwork::getRdTempoNode(DTNode prevLoc) {
+DTNode tempoNetwork::getRdTempoNode(int u, int k) {
   random_device rd;
   mt19937 gen(rd());
   vector<int> w;
-  for (auto nodeEvent : _nodeEvents) {
-    w.push_back(nodeEvent.size());
+  for (int e = k; e < nodeVanishE(u, k); e++) {
+    w.push_back(_nodeEvents[e].size());
   }
   discrete_distribution<> dis1(w.begin(), w.end());
-  int s = dis1(gen);
-  while (s == prevLoc.second)
-    s = dis1(gen);
-  uniform_int_distribution<> dis2(0, _nodeEvents[s].size() - 1);
-  int u = dis2(gen);
-  while (u == prevLoc.first)
-    u = dis2(gen);
-  return {u, s};
+  int t = dis1(gen);
+  uniform_int_distribution<> dis2(0, _nodeEvents[t].size() - 1);
+  int v = dis2(gen);
+  return {v, t};
 }
 
 int tempoNetwork::getRdLocation(int t) {

@@ -116,10 +116,10 @@ float meanOverlapping(vector<vector<pair<int, int>>> walk) {
 
 vector<vector<float>> streamRank(vector<vector<pair<int, int>>> walk, int n,
                                  int nbEvents) {
-  vector<vector<float>> res(n, vector<float>(nbEvents, 0.));
+  vector<vector<float>> res(nbEvents, vector<float>(n, 0.));
   for (auto walker : walk) {
     for (auto step : walker) {
-      res[step.first][step.second] += 1. / walk.size();
+      res[step.second][step.first] += 1. / walk.size();
     }
   }
   return res;

@@ -31,8 +31,7 @@ DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
   Fneighborhood dfnhb = tnet.directFutureNeighbors(_pos.first, _pos.second);
 
   if (jumpDis(eng) > alpha || dfnhb.size() == 0) {
-    _pos = {tnet.getRdLocation(_pos.second + 1), _pos.second + 1};
-    cout << "\njump: v:" << _pos.first << " t: " << _pos.second;
+    _pos = tnet.getRdTempoNode(_pos.first, _pos.second + 1);
   } else {
     // choose v amongts the future neighbors of u
     vector<float> w1;
@@ -90,7 +89,7 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
 
   uniform_real_distribution<float> jumpDis(0, 1);
   if (jumpDis(eng) > alpha || dfnhb.size() == 0) {
-    _pos = {tnet.getRdLocation(_pos.second + 1), _pos.second + 1};
+    _pos = tnet.getRdTempoNode(_pos.first, _pos.second);
   } else {
     // choose v amongts the future neighbors of u
     vector<float> w1;
@@ -110,10 +109,10 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
     vector<float> w2;
     float tk = tnet.getEventVal(_pos.second);
     float tk1 = tnet.getEventVal(_pos.second + 1);
-    for (int l = _pos.second + 1; l <= vEnd && l < tnet.nbEvents() - 1; l++) {
+    for (int l = _pos.second; l <= vEnd && l < tnet.nbEvents() - 1; l++) {
       possibleEvents.push_back(l);
       float tl = tnet.getEventVal(l);
-      float w = 0;
+      float w = 0.;
       for (int i = _pos.second; i <= l; i++) {
         int i1End = tnet.nodeVanishE(v, i);
         if (i <= uEnd && l <= i1End &&
@@ -130,6 +129,9 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
       w2.push_back(w);
     }
     discrete_distribution<> dis2(w2.begin(), w2.end());
+    cout << '\n';
+    for (auto event : possibleEvents)
+      cout << ' ' << event << ' ';
     int t = possibleEvents[dis2(eng)];
     _pos = {v, t};
   }
@@ -145,7 +147,7 @@ DTNode Walker<DTNode>::lowerBound(tempoNetwork &tnet, float alpha,
   Fneighborhood dfnhb = tnet.directFutureNeighbors(_pos.first, _pos.second);
 
   if (jumpDis(eng) > alpha || dfnhb.size() == 0) {
-    _pos = {tnet.getRdLocation(_pos.second + 1), _pos.second + 1};
+    _pos = tnet.getRdTempoNode(_pos.first, _pos.second);
   } else {
     // choose v amongts the future neighbors of u
     vector<float> w1;
@@ -164,32 +166,29 @@ DTNode Walker<DTNode>::lowerBound(tempoNetwork &tnet, float alpha,
     vector<int> possibleEvents;
     vector<float> w2;
     float tk1 = tnet.getEventVal(_pos.second + 1);
-    for (int l = _pos.second + 1; l <= vEnd && l < tnet.nbEvents() - 1; l++) {
+    for (int l = _pos.second; l <= vEnd && l < tnet.nbEvents() - 1; l++) {
       possibleEvents.push_back(l);
       float tl = tnet.getEventVal(l);
       float w = 1;
       for (int i = _pos.second + 1; i < l; i++) {
         int iEnd = tnet.nodeVanishE(v, i);
-        //       // if (i <= uEnd && l <= iEnd &&
-        //       tnet.checkEdgeAtEvent(_pos.first, v, i)
-        //       // &&
-        //       //     tnet.checkEdgeAtEvent(_pos.first, v, i + 1)) {
-        //       //   float ti1 = tnet.getEventVal(i + 1);
-        //       //   float ti = tnet.getEventVal(i);
-        //       //   float tiEnd = tnet.getEventVal(ti);
-        //       //   float div = integral(ti - tk1, tiEnd - tk1, h, 100);
-        //       //   w += (ti1 - ti) / div;
-        //       // }
+        if (i <= uEnd && l <= iEnd && tnet.checkEdgeAtEvent(_pos.first, v, i) &&
+            tnet.checkEdgeAtEvent(_pos.first, v, i + 1)) {
+          float ti1 = tnet.getEventVal(i + 1);
+          float ti = tnet.getEventVal(i);
+          float tiEnd = tnet.getEventVal(ti);
+          float div = integral(ti - tk1, tiEnd - tk1, h, 100);
+          w += (ti1 - ti) / div;
+        }
       }
-      // float tl1 = tnet.getEventVal(vEnd + 1);
-      // float tk = tnet.getEventVal(_pos.second);
-      // w = w * h(tl1 - tk);
+      float tl1 = tnet.getEventVal(l + 1);
+      float tk = tnet.getEventVal(_pos.second);
+      w = w * h(tl1 - tk);
       w2.push_back(w);
     }
-    //   discrete_distribution<> dis2(w2.begin(), w2.end());
-    //   int t = possibleEvents[dis2(eng)];
-    //   _pos = {v, t};
-    _pos = {v, _pos.second + 1};
+    discrete_distribution<> dis2(w2.begin(), w2.end());
+    int t = possibleEvents[dis2(eng)];
+    _pos = {v, t};
   }
   return _pos;
 }

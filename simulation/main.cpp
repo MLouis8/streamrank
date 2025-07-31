@@ -3,12 +3,10 @@
 #include "include/network.hpp"
 #include "include/pagerank.hpp"
 #include "include/randomWalk.hpp"
-#include "include/rdLib.hpp"
 #include "include/temporalNetwork.hpp"
 #include <cmath>
 #include <iostream>
 #include <numeric>
-#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -81,34 +79,20 @@ void overlappingExperiment() {
   vector<vector<pair<int, int>>> edgeEvents1 = {
       {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}},
       {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}};
-  tempoNetwork tnet1(0, 10, 2, nodeEvents1, edgeEvents1);
+  tempoNetwork tnet(0, 10, 2, nodeEvents1, edgeEvents1);
   // auto h = [](float x) { return x; };
   auto h = [](float x) { return exp(-x); };
   vector<vector<pair<int, int>>> walk =
-      randomWalkSimulation(10, 10, 1, tnet1, h, 3);
-  for (auto walker : walk) {
-    cout << '\n';
-    for (auto step : walker)
-      cout << "(" << step.first << ", " << step.second << ") ";
-  }
-  // part 2 on more complex link stream
-  // vector<vector<int>> nodeEvents2;
-  // vector<vector<pair<int, int>>> edgeEvents2;
-  // vector<int> nodes;
-  // for (int i = 0; i < 100; i++)
-  //   nodes.push_back(i);
-  // vector<pair<int, int>> edges;
-  // for (int i = 0; i < 100; i++) {
-  //   for (int j = i + 1; j < 100; j++) {
-  //     edges.push_back({i, j});
-  //   }
-  // }
-  // for (int i = 0; i < 10; i++) {
-  //   nodeEvents2.push_back(nodes);
-  //   edgeEvents2.push_back(edges)
-  // }
+      randomWalkSimulation(1, 1, 1, tnet, h, 2);
 
-  // part 3 on random stream graph
+  float mean = meanOverlapping(walk);
+
+  cout << mean;
+  // for (auto walker : walk) {
+  //   cout << '\n';
+  //   for (auto step : walker)
+  //     cout << "(" << step.first << ", " << step.second << ") ";
+  // }
 }
 
 /**
