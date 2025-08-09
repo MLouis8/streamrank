@@ -60,11 +60,12 @@ void approComputation() {}
 /**
  * Generate a temporal network and saves it
  */
-void genTempoNet(int n, int sumNodes, float p, int nbEvents, string name) {
+void genTempoNet(int n, int sumNodes, float p, int nbEvents, string name,
+                 float tStart, float tEnd) {
   cout << "Graph parameters:\n";
   cout << "n: " << n << ", p: " << p;
   cout << ", sumNodes: " << sumNodes << '\n';
-  tempoNetwork tnet(n, sumNodes, 10, 0.5);
+  tempoNetwork tnet(n, sumNodes, 10, 0.5, tStart, tEnd, true);
   writeTempoNetwork(tnet, name);
   cout << "\nTemporal Network generated\n";
 }
@@ -72,27 +73,34 @@ void genTempoNet(int n, int sumNodes, float p, int nbEvents, string name) {
 /**
  * Overlapping part experiment to see if negligeable or not
  */
-void overlappingExperiment() {
+void overlappingExperiment(tempoNetwork &rdTnet, int nbWalkers, int nbSteps,
+                           float alpha) {
   // part 1 on basic link stream
-  vector<vector<int>> nodeEvents1 = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1},
-                                     {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}};
-  vector<vector<pair<int, int>>> edgeEvents1 = {
-      {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}},
-      {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}};
-  tempoNetwork tnet(0, 10, 2, nodeEvents1, edgeEvents1);
+  // vector<vector<int>> nodeEvents1 = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1},
+  //                                    {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}};
+  // vector<vector<pair<int, int>>> edgeEvents1 = {
+  //     {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}},
+  //     {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}, {{0, 1}}};
+  // tempoNetwork tnet1(0, 10, 2, nodeEvents1, edgeEvents1);
   // auto h = [](float x) { return x; };
   auto h = [](float x) { return exp(-x); };
-  vector<vector<pair<int, int>>> walk =
-      randomWalkSimulation(1, 1, 1, tnet, h, 2);
+  // vector<vector<pair<int, int>>> walk1 =
+  //     randomWalkSimulation(1000, 10, 1, tnet1, h, 2);
+  // float mean1 = meanOverlapping(walk1);
+  // cout << '\n' << mean1;
 
-  float mean = meanOverlapping(walk);
-
-  cout << mean;
-  // for (auto walker : walk) {
-  //   cout << '\n';
-  //   for (auto step : walker)
-  //     cout << "(" << step.first << ", " << step.second << ") ";
+  vector<vector<pair<int, int>>> walk2 =
+      randomWalkSimulation(nbWalkers, nbSteps, alpha, rdTnet, h, 2);
+  // for (int i = 0; i < 10; i++) {
+  // cout << "\nWalker " << i << " ended the walk in node ("
+  //  << walk2[i].back().first << ", " << walk2[i].back().second
+  //  << ") and walked " << walk2[i].size() << " steps.";
   // }
+  // cout << "\nsize: " << walk2.size();
+  // float mean2 = meanOverlapping(walk2);
+  // cout << '\n'; // << mean2;
+  // for (int i = 0; i < walk2[0].size(); i++)
+  //   cout << "(" << walk2[0][i].first << ", " << walk2[0][i].second << "); ";
 }
 
 /**
@@ -101,18 +109,45 @@ void overlappingExperiment() {
 void simulation() {}
 
 int main(int argc, char *argv[]) {
-  overlappingExperiment();
-  // genTempoNet(10, 70, 0.6, 10, "test0");
-  // int nbWalkers = 1;
-  // int nbSteps = 10; // 100;
-  // float eps = 0.00001;
-  // float alpha = 0.85;
-  // tempoNetwork tnet = readStreamFile("../data/test.stream");
-  // cout << "\nStream graph loaded\n";
-  // auto h = [](float x) { return exp(-x); };
-  // vector<vector<int>> rdWalk =
-  //     randomWalkSimulation(nbWalkers, nbSteps, eps, alpha, tnet, h, 1);
+  // genTempoNet(100, 16000, 0.1, 200, "test", 0., 200.);
+  tempoNetwork rdTnet = readStreamFile("test.stream");
+  // int i = 0;
+  // for (auto event : rdTnet.getNodeEvents()) {
+  //   cout << "\nPour l'event " << i << " on a: ";
+  //   for (auto node : event) {
+  //     cout << node << ' ';
+  //   }
+  //   i += 1;
+  // }
+  // int j = 0;
+  // for (auto event : rdTnet.getEdgeEvents()) {
+  //   cout << "\nPour l'event " << j << " on a: ";
+  //   for (auto edge : event) {
+  //     cout << " (" << edge.first << ", " << edge.second << ')';
+  //   }
+  //   j += 1;
+  // }
+  // Génération aléatoire de stream graph:
+  // Faire un paramaètre style compacité pour les arêtes
 
+  // Puis quand on fait les arêtes, on prend deux chuncks qui se superposent, on
+  // a une proba p qu'une arête existe entre ces deux chuncks puis on regarde la
+  // taille de l'intersection des chuncks et on tire au hasard une partition de
+  // cette taille la dans l'ensemble des partitions de {1, ..., taille inter}
+
+  // Zero compute overlapping proportion on the existing graph and veriy
+  // everything works
+  // First generate 100 graphs with characteristics as the
+  // first one Second compute avg overlapping proportion and compare with the
+  // first result Third compute the 9900 last graphs create a curve of avg
+  // ovelapping according to compacity
+
+  // Compute the avgchunk size and find 100 batchs of 10 graphs each of similar
+  // avgchunksize Compute the avg overlapping proportion in each batch and
+  // render a figure
+
+  cout << "Avg Chunk size is " << rdTnet.avgChunkSize();
+  overlappingExperiment(rdTnet, 1, 10, 1.);
   // cout << "\nRandom walk done, now the results:\n";
   // displayResults(rdWalk, tnet.size(), tnet.getNodeEvents());
   // cout << "\nNodes present at last event: ";

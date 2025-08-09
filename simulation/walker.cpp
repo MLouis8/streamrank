@@ -86,25 +86,28 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
   random_device rd;
   default_random_engine eng(rd());
   Fneighborhood dfnhb = tnet.directFutureNeighbors(_pos.first, _pos.second);
-
+  Fneighborhood fnhb = tnet.futureNeighbours(_pos.first, _pos.second);
+  cout << "\nDirect Future Neigh size is " << dfnhb.size();
+  cout << "\nFuture Neigh size is " << fnhb.size();
   uniform_real_distribution<float> jumpDis(0, 1);
   if (jumpDis(eng) > alpha || dfnhb.size() == 0) {
+    cout << "\njump";
     _pos = tnet.getRdTempoNode(_pos.first, _pos.second);
   } else {
     // choose v amongts the future neighbors of u
     vector<float> w1;
     vector<int> neighbors;
-    for (auto &[key, val] : dfnhb) {
+    for (auto &[key, val] : fnhb) {
       w1.push_back(val.size());
       neighbors.push_back(key);
     }
     discrete_distribution<> dis1(w1.begin(), w1.end());
     int v = neighbors[dis1(eng)];
-
+    cout << "\nNeighbour " << v << " is chosen";
     // select an event
     int uEnd = tnet.nodeVanishE(_pos.first, _pos.second);
-    int vStart = dfnhb[v][0];
-    int vEnd = dfnhb[v].back();
+    int vStart = fnhb[v][0];
+    int vEnd = fnhb[v].back();
     vector<int> possibleEvents;
     vector<float> w2;
     float tk = tnet.getEventVal(_pos.second);
@@ -116,24 +119,30 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
       for (int i = _pos.second; i <= l; i++) {
         int i1End = tnet.nodeVanishE(v, i);
         if (i <= uEnd && l <= i1End &&
-            tnet.checkEdgeAtEvent(_pos.first, v, i) &&
-            tnet.checkEdgeAtEvent(_pos.first, v, i + 1)) {
+            tnet.checkEdgeAtEvent(_pos.first, v, i)) {
           float ti1 = tnet.getEventVal(i + 1);
           float ti = tnet.getEventVal(i);
           float ti1End = tnet.getEventVal(i1End);
+          if (ti1 == ti1End)
+            ti1End += 1;
           float div = integral(ti1 - tk, ti1End - tk, h, 100);
           w += (ti1 - ti) / div;
+          if (ti1 - ti == 0)
+            cout << "\nBe careful ti1-ti is null";
+          cout << "\ndiv is " << div;
         }
       }
       w = w * h(tl - tk1);
       w2.push_back(w);
     }
-    discrete_distribution<> dis2(w2.begin(), w2.end());
-    cout << '\n';
-    for (auto event : possibleEvents)
-      cout << ' ' << event << ' ';
-    int t = possibleEvents[dis2(eng)];
-    _pos = {v, t};
+    cout << "\npossible events size is " << possibleEvents.size();
+    for (int i = 0; i < w2.size(); i++) {
+      cout << ' ' << w2[i];
+    }
+    // discrete_distribution<> dis2(w2.begin(), w2.end());
+    // int t = possibleEvents[dis2(eng)];
+
+    _pos = {v, _pos.second + 1};
   }
   return _pos;
 }
@@ -172,8 +181,7 @@ DTNode Walker<DTNode>::lowerBound(tempoNetwork &tnet, float alpha,
       float w = 1;
       for (int i = _pos.second + 1; i < l; i++) {
         int iEnd = tnet.nodeVanishE(v, i);
-        if (i <= uEnd && l <= iEnd && tnet.checkEdgeAtEvent(_pos.first, v, i) &&
-            tnet.checkEdgeAtEvent(_pos.first, v, i + 1)) {
+        if (i <= uEnd && l <= iEnd && tnet.checkEdgeAtEvent(_pos.first, v, i)) {
           float ti1 = tnet.getEventVal(i + 1);
           float ti = tnet.getEventVal(i);
           float tiEnd = tnet.getEventVal(ti);

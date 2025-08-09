@@ -3,7 +3,6 @@
 #include "include/network.hpp"
 #include "include/rdLib.hpp"
 #include "include/strHandler.hpp"
-
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -12,9 +11,15 @@
 #include <utility>
 #include <vector>
 
-tempoNetwork::tempoNetwork(int n, int sumNodes, int nbEvents, float p) {
-  vector<int> eventPerNodeS = rdTimeSeries(sumNodes, n, nbEvents);
-  vector<int> nodePerEventS = rdTimeSeries(sumNodes, nbEvents, n);
+tempoNetwork::tempoNetwork(int n, int sumNodes, int nbEvents, float p,
+                           float tStart, float tEnd, bool atomicEdges) {
+  vector<int> eventPerNodeS, nodePerEventS;
+  // do {
+  eventPerNodeS = rdTimeSeries(sumNodes, n, nbEvents);
+  nodePerEventS = rdTimeSeries(sumNodes, nbEvents, n);
+  cout << "\ntrying a randomly generated pair of sequences...";
+  // } while (notCompatible(eventPerNodeS, nodePerEventS));
+
   Bipartite tNodes = rdBipartiteFromDegrees(eventPerNodeS, nodePerEventS);
   _n = eventPerNodeS.size();
   _nodeEvents = vector<vector<int>>(nbEvents);
@@ -22,13 +27,68 @@ tempoNetwork::tempoNetwork(int n, int sumNodes, int nbEvents, float p) {
     _nodeEvents[e.second].push_back(e.first);
   }
   _edgeEvents = vector<vector<pair<int, int>>>(nbEvents);
-  for (int i = 0; i < nbEvents; i++) {
-    Network currentNet(_nodeEvents[i].size(), p);
-    vector<pair<int, int>> rawEdges = currentNet.getEdges();
-    for (auto e : rawEdges)
-      _edgeEvents[i].push_back(
-          {_nodeEvents[i][e.first], _nodeEvents[i][e.second]});
+  if (atomicEdges) {
+    for (int i = 0; i < nbEvents; i++) {
+      Network currentNet(_nodeEvents[i].size(), p);
+      vector<pair<int, int>> rawEdges = currentNet.getEdges();
+      for (auto e : rawEdges)
+        _edgeEvents[i].push_back(
+            {_nodeEvents[i][e.first], _nodeEvents[i][e.second]});
+    }
+  } else {
+    for (int u = 0; u < _n; u++) {
+      for (int v = u + 1; v < _n; v++) {
+        int uChunkStart = 0;
+        int vChunkStart = 0;
+        while (uChunkStart < nbEvents || vChunkStart < nbEvents) {
+          int uChunkEnd = nodeVanishE(u, uChunkStart);
+          while (uChunkEnd == uChunkStart) {
+            uChunkStart += 1;
+            uChunkEnd = nodeVanishE(u, uChunkStart);
+          }
+          int vChunkEnd = nodeVanishE(v, vChunkStart);
+          while (vChunkEnd == vChunkStart) {
+            vChunkStart += 1;
+            vChunkEnd = nodeVanishE(v, vChunkStart);
+          }
+          while (uChunkStart > vChunkEnd) {
+          }
+          while (vChunkStart > uChunkEnd) {
+          }
+        }
+      }
+    }
+
+    // for (int node = 0; node < _n; node++) {
+    //   int startChunkE = 0;
+    //   while (startChunkE < nbEvents) {
+    //     int endChunk = nodeVanishE(node, startChunkE);
+    //     Fneighborhood pNeighbours;
+    //     // int currentChunkSize = nodeVanishE(node, chunkId) - chunkId + 1;
+    //     for (int i = startChunkE; i <= endChunk; i++) {
+    //       for (int otherNode : _nodeEvents[i]) {
+    //         if (otherNode != node) {
+    //           if (find(pNeighbours.begin(), pNeighbours.end(), otherNode) !=
+    //               pNeighbours.end()) {
+    //             pNeighbours[otherNode].push_back();
+    //           } else {
+    //             pNeighbours[otherNode] = ;
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
   }
+
+  _tStart = tStart;
+  _tEnd = tEnd;
+  vector<Event> events;
+  float step = (_tEnd - _tStart) / nbEvents;
+  for (int e = 0; e < nbEvents; e++) {
+    events.push_back(Event(_tStart + step * e));
+  }
+  _events = events;
 }
 
 tempoNetwork::tempoNetwork(Network aglo, vector<int> nodeTimeS,
@@ -152,10 +212,11 @@ bool tempoNetwork::checkEdgeAtEvent(int u, int v, int event) {
 }
 
 int tempoNetwork::nodeVanishE(int u, int k) {
-  while (k < _nodeEvents.size() &&
-         find(_nodeEvents[k].begin(), _nodeEvents[k].end(), u) !=
-             _nodeEvents[k].end())
+  do {
     k++;
+  } while (k < _nodeEvents.size() &&
+           find(_nodeEvents[k].begin(), _nodeEvents[k].end(), u) !=
+               _nodeEvents[k].end());
   return k - 1;
 }
 
@@ -206,11 +267,34 @@ Fneighborhood tempoNetwork::directFutureNeighbors(int u, int e) {
   return res;
 }
 
+Fneighborhood tempoNetwork::futureNeighbours(int u, int e) {
+  int vanishE = nodeVanishE(u, e);
+  Fneighborhood res;
+  vector<int> ineigh;
+  int i = e;
+  for (; i <= vanishE; i++) {
+    ineigh = instENeighbors(u, i);
+    for (int neighbor : ineigh) {
+      if (res.find(neighbor) == res.end()) {
+        res[neighbor] = {i};
+      } else {
+        res[neighbor].push_back(i);
+      }
+    }
+  }
+  for (int lastneigh : ineigh) {
+    int vanishE = nodeVanishE(lastneigh, i);
+    for (int j = i; j < vanishE; j++)
+      res[lastneigh].push_back(j);
+  }
+  return res;
+}
+
 DTNode tempoNetwork::getRdTempoNode(int u, int k) {
   random_device rd;
   mt19937 gen(rd());
   vector<int> w;
-  for (int e = k; e < nodeVanishE(u, k); e++) {
+  for (int e = k; e <= nodeVanishE(u, k); e++) {
     w.push_back(_nodeEvents[e].size());
   }
   discrete_distribution<> dis1(w.begin(), w.end());
@@ -313,4 +397,23 @@ void tempoNetwork::genRdTimes(int nbEvents, float tStart, float tEnd) {
   for (auto time : times)
     events.push_back(Event(time));
   _events = events;
+}
+
+float tempoNetwork::avgChunkSize() {
+  float nbChunks = 0;
+  float sumChunks = 0;
+  for (int node = 0; node < _n; node++) {
+    int chunckId = 0;
+    while (chunckId < nbEvents()) {
+      if (find(_nodeEvents[chunckId].begin(), _nodeEvents[chunckId].end(),
+               node) != _nodeEvents[chunckId].end()) {
+        nbChunks += 1;
+        int temp = chunckId;
+        chunckId = nodeVanishE(node, temp);
+        sumChunks += chunckId - temp + 1;
+      }
+      chunckId += 1;
+    }
+  }
+  return sumChunks / nbChunks;
 }

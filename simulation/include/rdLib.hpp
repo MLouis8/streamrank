@@ -30,4 +30,10 @@ Bipartite rdBipartiteFromDegrees(vector<int> upDeg, vector<int> downDeg);
  */
 vector<int> rdTimeSeries(int sum, int nbEvents, int nbObj);
 
+vector<int> rdTimeSeriesv2(int sum, int nbEvents, int nbObj);
+
+bool notCompatible(vector<int> x, vector<int> y);
+
+vector<int> rdPartition(int size);
+
 #endif // RANDOMBIPARTITE_HPP

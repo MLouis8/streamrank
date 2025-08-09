@@ -45,6 +45,31 @@ Bipartite rdBipartiteFromDegrees(vector<int> upDeg, vector<int> downDeg) {
   return res;
 }
 
+// Add constraints to respect the Gale Ryzer theorem
+// first generate a rdTimeSeries y
+// the generate x but
+// the biggest element of x must be bounded by the sum of elements of y (already
+// the case) and the sum of elements of 1 to nbObj - 1
+vector<int> rdTimeSeriesv2(int sum, int nbEvents, int nbObj) {
+  vector<int> res(nbEvents, 0);
+  int k = 1;
+  for (int i = 2; i < nbEvents; i++)
+    k += i;
+  random_device rd;
+  mt19937 gen(rd());
+  vector<int> w(nbEvents, 1);
+  discrete_distribution<> dis(w.begin(), w.end());
+  for (int i = 0; i < sum; i++) {
+    int id = dis(gen);
+    res[id]++;
+    if (res[id] == nbObj || res[id] == k) {
+      w[id] = 0;
+      dis = discrete_distribution<>(w.begin(), w.end());
+    }
+  }
+  return res;
+}
+
 vector<int> rdTimeSeries(int sum, int nbEvents, int nbObj) {
   vector<int> res(nbEvents, 0);
   random_device rd;
@@ -58,6 +83,32 @@ vector<int> rdTimeSeries(int sum, int nbEvents, int nbObj) {
       w[id] = 0;
       dis = discrete_distribution<>(w.begin(), w.end());
     }
+  }
+  return res;
+}
+
+bool notCompatible(vector<int> x, vector<int> y) {
+  sort(x.begin(), x.end(), greater<int>());
+  int sum = 0;
+  for (int k = 0; k < x.size(); k++) {
+    sum += x[k];
+    int ssum = 0;
+    for (int j = 0; j < y.size(); j++)
+      ssum += min(k, y[j]);
+    if (sum > ssum)
+      return true;
+  }
+  return false;
+}
+
+vector<int> rdPartition(int size) {
+  random_device rd;
+  mt19937 gen(rd());
+  uniform_int_distribution<> dis(0, 1);
+  vector<int> res;
+  for (int i = 0; i < size; i++) {
+    if (dis(gen) == 0)
+      res.push_back(i);
   }
   return res;
 }

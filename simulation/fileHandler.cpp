@@ -52,8 +52,9 @@ tempoNetwork readStreamFile(const string &filename) {
     vector<pair<int, int>> edges;
     getline(ifile, line); // read the line
     istringstream iss(line);
+    char pLeft, comma, pRight;
     int n1, n2;
-    while (iss >> n1 >> n2) {
+    while (iss >> pLeft >> n1 >> comma >> n2 >> pRight) {
       edges.push_back({n1, n2});
     }
     edgeEvents.push_back(edges);
@@ -67,7 +68,7 @@ tempoNetwork readStreamFile(const string &filename) {
 void writeTempoNetwork(tempoNetwork &tnet, string filename) {
   ofstream ofile;
   ofile.open(filename + ".stream");
-  // ofile << tnet.startTime() << ' ' << tnet.endTime() << '\n';
+  ofile << tnet.startTime() << ' ' << tnet.endTime() << '\n';
   ofile << tnet.size() << '\n';
   ofile << tnet.nbEvents() << '\n';
   for (auto nodeEvent : tnet.getNodeEvents()) {

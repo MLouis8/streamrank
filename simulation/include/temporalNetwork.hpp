@@ -27,12 +27,12 @@ public:
   * n is the number of different nodes
   * sumNodes is the number of temporal nodes (presence of a node during an event
   count as 1)
-  * sumEdges is the number of temporal edges (presence of an edge during an
-  event count as 1)
+  * nbEvents is the number of events (time steps)
   * p is the probability that at event x there is a link between temporal node a
   and b (Erdos-Reyni like)
   */
-  tempoNetwork(int n, int sumNodes, int nbEvents, float p);
+  tempoNetwork(int n, int sumNodes, int nbEvents, float p, float tStart,
+               float tEnd, bool atomicEdges);
   tempoNetwork(Network aglo, vector<int> nodeTimeS, vector<int> edgeTimeS,
                float tStart, float tEnd);
   tempoNetwork(float tStart, float tEnd, int n, vector<TimeItvs> W,
@@ -92,6 +92,8 @@ public:
    */
   Fneighborhood directFutureNeighbors(int u, int e);
 
+  Fneighborhood futureNeighbours(int u, int e);
+
   /**
    * Returns a random node present at time t
    */
@@ -101,6 +103,8 @@ public:
    * Returns a random temporal node, that is different than (u, k-1)
    */
   DTNode getRdTempoNode(int u, int k);
+
+  float avgChunkSize();
 
 private:
   float _tStart;
