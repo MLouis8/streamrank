@@ -37,7 +37,6 @@ vector<vector<pair<int, int>>> randomWalkSimulation(int nbWalkers, int nbSteps,
   vector<Walker<DTNode>> walkersList;
   for (int i = 0; i < nbWalkers; i++) {
     int startPos = tnet.getRdLocation(0);
-    cout << "\nStarting position is " << startPos;
     walkersPositions.push_back({{startPos, 0}});
     walkersList.push_back(Walker<DTNode>(i, {startPos, 0}));
   }

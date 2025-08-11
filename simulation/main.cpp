@@ -109,7 +109,7 @@ void overlappingExperiment(tempoNetwork &rdTnet, int nbWalkers, int nbSteps,
 void simulation() {}
 
 int main(int argc, char *argv[]) {
-  // genTempoNet(100, 16000, 0.1, 200, "test", 0., 200.);
+  // genTempoNet(20, 160, 0.1, 10, "test", 0., 100.);
   tempoNetwork rdTnet = readStreamFile("test.stream");
   // int i = 0;
   // for (auto event : rdTnet.getNodeEvents()) {
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
   // render a figure
 
   cout << "Avg Chunk size is " << rdTnet.avgChunkSize();
-  overlappingExperiment(rdTnet, 1, 10, 1.);
+  overlappingExperiment(rdTnet, 100, 10, 1.);
   // cout << "\nRandom walk done, now the results:\n";
   // displayResults(rdWalk, tnet.size(), tnet.getNodeEvents());
   // cout << "\nNodes present at last event: ";

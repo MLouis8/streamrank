@@ -1,6 +1,8 @@
 #include "include/walker.hpp"
 #include "include/integral.hpp"
+#include <algorithm>
 #include <iostream>
+#include <numeric>
 #include <random>
 #include <utility>
 #include <vector>
@@ -87,8 +89,8 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
   default_random_engine eng(rd());
   Fneighborhood dfnhb = tnet.directFutureNeighbors(_pos.first, _pos.second);
   Fneighborhood fnhb = tnet.futureNeighbours(_pos.first, _pos.second);
-  cout << "\nDirect Future Neigh size is " << dfnhb.size();
-  cout << "\nFuture Neigh size is " << fnhb.size();
+  // cout << "\nDirect Future Neigh size is " << dfnhb.size();
+  // cout << "\nFuture Neigh size is " << fnhb.size();
   uniform_real_distribution<float> jumpDis(0, 1);
   if (jumpDis(eng) > alpha || dfnhb.size() == 0) {
     cout << "\njump";
@@ -103,7 +105,7 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
     }
     discrete_distribution<> dis1(w1.begin(), w1.end());
     int v = neighbors[dis1(eng)];
-    cout << "\nNeighbour " << v << " is chosen";
+    // cout << "\nNeighbour " << v << " is chosen";
     // select an event
     int uEnd = tnet.nodeVanishE(_pos.first, _pos.second);
     int vStart = fnhb[v][0];
@@ -117,32 +119,43 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
       float tl = tnet.getEventVal(l);
       float w = 0.;
       for (int i = _pos.second; i <= l; i++) {
-        int i1End = tnet.nodeVanishE(v, i);
-        if (i <= uEnd && l <= i1End &&
-            tnet.checkEdgeAtEvent(_pos.first, v, i)) {
+        int iEnd = tnet.nodeVanishE(v, i);
+        if (i <= uEnd && l <= iEnd && tnet.checkEdgeAtEvent(_pos.first, v, i)) {
+          int i1End = tnet.nodeVanishE(v, i + 1);
           float ti1 = tnet.getEventVal(i + 1);
           float ti = tnet.getEventVal(i);
           float ti1End = tnet.getEventVal(i1End);
           if (ti1 == ti1End)
             ti1End += 1;
+          ti1End = tnet.getEventVal(i1End + 1);
           float div = integral(ti1 - tk, ti1End - tk, h, 100);
           w += (ti1 - ti) / div;
-          if (ti1 - ti == 0)
-            cout << "\nBe careful ti1-ti is null";
-          cout << "\ndiv is " << div;
+          // if (div <= 0.000001) {
+          //   cout << "\ndiv is " << div;
+          //   cout << "\nti1-tk " << ti1 - tk << " ti1End-tk " << ti1End - tk
+          //        << endl;
+          // }
         }
       }
       w = w * h(tl - tk1);
+      // if (w <= 0.00001) {
+      //   cout << w << endl
+      //        << _pos.first << ' ' << _pos.second << endl
+      //        << v << ' ' << l << endl;
+      // }
       w2.push_back(w);
     }
-    cout << "\npossible events size is " << possibleEvents.size();
-    for (int i = 0; i < w2.size(); i++) {
-      cout << ' ' << w2[i];
+    if (accumulate(w2.begin(), w2.end(), 0.) > 0) {
+      discrete_distribution<> dis2(w2.begin(), w2.end());
+      int t = possibleEvents[dis2(eng)];
+      _pos = {v, t};
+    } else {
+      cout << "\npossible events size is " << possibleEvents.size() << " "
+           << w2.size();
+      for (int i = 0; i < w2.size(); i++) {
+        cout << ' ' << w2[i];
+      }
     }
-    // discrete_distribution<> dis2(w2.begin(), w2.end());
-    // int t = possibleEvents[dis2(eng)];
-
-    _pos = {v, _pos.second + 1};
   }
   return _pos;
 }
