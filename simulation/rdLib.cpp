@@ -112,3 +112,9 @@ vector<int> rdPartition(int size) {
   }
   return res;
 }
+
+void shift(vector<int> &tab, int shift) {
+  for (int i = 0; i < tab.size(); i++) {
+    tab[i] += shift;
+  }
+}

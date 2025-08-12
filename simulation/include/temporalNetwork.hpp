@@ -74,6 +74,7 @@ public:
   float nodeVanishT(int u, float t);
   float nodeAppearT(int u, float t);
   int nodeVanishE(int u, int k);
+  int edgeVanishE(int u, int v, int k);
   int nodeAppearE(int u, int k);
   /**
    * Returns the vector of node ids of the neighbors of u at the event time
@@ -105,9 +106,15 @@ public:
    */
   DTNode getRdTempoNode(int u, int k);
 
-  float avgChunkSize();
+  float avgNodeChunkSize();
+
+  float avgEdgeChunkSize();
 
   Chunks getChunks(int node);
+
+  Chunks getChunks(int u, int v);
+
+  Chunks interChunks(Chunks &a, Chunks &b);
 
 private:
   float _tStart;

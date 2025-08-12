@@ -93,7 +93,6 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
   // cout << "\nFuture Neigh size is " << fnhb.size();
   uniform_real_distribution<float> jumpDis(0, 1);
   if (jumpDis(eng) > alpha || dfnhb.size() == 0) {
-    cout << "\njump";
     _pos = tnet.getRdTempoNode(_pos.first, _pos.second);
   } else {
     // choose v amongts the future neighbors of u

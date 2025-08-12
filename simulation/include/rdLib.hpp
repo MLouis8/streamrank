@@ -36,4 +36,6 @@ bool notCompatible(vector<int> x, vector<int> y);
 
 vector<int> rdPartition(int size);
 
+void shift(vector<int> &tab, int shift);
+
 #endif // RANDOMBIPARTITE_HPP

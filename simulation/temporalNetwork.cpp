@@ -38,57 +38,28 @@ tempoNetwork::tempoNetwork(int n, int sumNodes, int nbEvents, float p,
   } else {
     vector<Chunks> nodeChunks;
     nodeChunks.push_back(getChunks(0));
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_real_distribution<> dis(0.0, 1.0);
     for (int u = 0; u < _n; u++) {
       for (int v = u + 1; v < _n; v++) {
         if (nodeChunks.size() <= v) {
           nodeChunks.push_back(getChunks(v));
         }
-        int uChunkStart = 0, uChunkEnd = 0;
-        int vChunkStart = 0, vChunkEnd = 0;
-        while (uChunkStart < nbEvents || vChunkStart < nbEvents) {
-          uChunkEnd = nodeVanishE(u, uChunkStart);
-          while (uChunkEnd == uChunkStart) {
-            uChunkStart += 1;
-            uChunkEnd = nodeVanishE(u, uChunkStart);
-          }
-          while (vChunkStart <= uChunkEnd) {
-          }
-
-          vChunkEnd = nodeVanishE(v, vChunkStart);
-          while (vChunkEnd == vChunkStart) {
-            vChunkStart += 1;
-            vChunkEnd = nodeVanishE(v, vChunkStart);
-          }
-          while (uChunkStart > vChunkEnd) {
-          }
-          while (vChunkStart > uChunkEnd) {
+        Chunks intersection = interChunks(nodeChunks[u], nodeChunks[v]);
+        for (auto chunk : intersection) {
+          if (dis(gen) <= p) {
+            vector<int> part = rdPartition(chunk.second - chunk.first + 1);
+            shift(part, chunk.first);
+            for (int event : part) {
+              _edgeEvents[event].push_back({u, v});
+              _edgeEvents[event].push_back({v, u});
+            }
           }
         }
       }
     }
-
-    // for (int node = 0; node < _n; node++) {
-    //   int startChunkE = 0;
-    //   while (startChunkE < nbEvents) {
-    //     int endChunk = nodeVanishE(node, startChunkE);
-    //     Fneighborhood pNeighbours;
-    //     // int currentChunkSize = nodeVanishE(node, chunkId) - chunkId + 1;
-    //     for (int i = startChunkE; i <= endChunk; i++) {
-    //       for (int otherNode : _nodeEvents[i]) {
-    //         if (otherNode != node) {
-    //           if (find(pNeighbours.begin(), pNeighbours.end(), otherNode) !=
-    //               pNeighbours.end()) {
-    //             pNeighbours[otherNode].push_back();
-    //           } else {
-    //             pNeighbours[otherNode] = ;
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
   }
-
   _tStart = tStart;
   _tEnd = tEnd;
   vector<Event> events;
@@ -225,6 +196,19 @@ int tempoNetwork::nodeVanishE(int u, int k) {
   } while (k < _nodeEvents.size() &&
            find(_nodeEvents[k].begin(), _nodeEvents[k].end(), u) !=
                _nodeEvents[k].end());
+  return k - 1;
+}
+
+int tempoNetwork::edgeVanishE(int u, int v, int k) {
+  pair<int, int> p1 = {u, v};
+  auto it = [p1](const pair<int, int> &p2) {
+    return p1.first == p2.first && p1.second == p2.second;
+  };
+  do {
+    k++;
+  } while (k < _edgeEvents.size() &&
+           find_if(_edgeEvents[k].begin(), _edgeEvents[k].end(), it) !=
+               _edgeEvents[k].end());
   return k - 1;
 }
 
@@ -407,7 +391,7 @@ void tempoNetwork::genRdTimes(int nbEvents, float tStart, float tEnd) {
   _events = events;
 }
 
-float tempoNetwork::avgChunkSize() {
+float tempoNetwork::avgNodeChunkSize() {
   float nbChunks = 0;
   float sumChunks = 0;
   for (int node = 0; node < _n; node++) {
@@ -415,6 +399,21 @@ float tempoNetwork::avgChunkSize() {
     for (auto chunk : nodeChunks) {
       nbChunks += 1;
       sumChunks += chunk.second - chunk.first + 1;
+    }
+  }
+  return sumChunks / nbChunks;
+}
+
+float tempoNetwork::avgEdgeChunkSize() {
+  float nbChunks = 0;
+  float sumChunks = 0;
+  for (int u = 0; u < _n; u++) {
+    for (int v = u + 1; v < _n; v++) {
+      Chunks edgeChunks = getChunks(u, v);
+      for (auto chunk : edgeChunks) {
+        nbChunks += 1;
+        sumChunks += chunk.second - chunk.first + 1;
+      }
     }
   }
   return sumChunks / nbChunks;
@@ -433,6 +432,53 @@ Chunks tempoNetwork::getChunks(int node) {
     int end = nodeVanishE(node, start);
     res.push_back({start, end});
     start = end + 1;
+  }
+  return res;
+}
+
+Chunks tempoNetwork::getChunks(int u, int v) {
+  vector<pair<int, int>> res;
+  int start = 0;
+  pair<int, int> p1 = {u, v};
+  auto it = [p1](const pair<int, int> &p2) {
+    return p1.first == p2.first && p1.second == p2.second;
+  };
+  while (start < _edgeEvents.size()) {
+    while (start < _edgeEvents.size() &&
+           find_if(_edgeEvents[start].begin(), _edgeEvents[start].end(), it) ==
+               _edgeEvents[start].end())
+      start += 1;
+    if (start >= _edgeEvents.size())
+      return res;
+    int end = edgeVanishE(u, v, start);
+    res.push_back({start, end});
+    start = end + 1;
+  }
+  return res;
+}
+
+Chunks tempoNetwork::interChunks(Chunks &a, Chunks &b) {
+  int currentA = 0, currentB = 0;
+  Chunks res;
+  auto inter = [](Chunks &res, Chunks &x, Chunks &y, int &currentX,
+                  int &currentY) {
+    if (x[currentX].second >= y[currentY].first) {
+      if (x[currentX].second <= y[currentY].second) {
+        res.push_back({y[currentY].first, x[currentX].second});
+        currentX += 1;
+      } else {
+        res.push_back({y[currentY].first, y[currentY].second});
+        currentY += 1;
+      }
+    } else {
+      currentX += 1;
+    }
+  };
+  while (currentA < a.size() && currentB < b.size()) {
+    if (a[currentA].first <= b[currentB].first)
+      inter(res, a, b, currentA, currentB);
+    else
+      inter(res, b, a, currentB, currentA);
   }
   return res;
 }

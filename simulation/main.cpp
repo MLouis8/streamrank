@@ -61,11 +61,11 @@ void approComputation() {}
  * Generate a temporal network and saves it
  */
 void genTempoNet(int n, int sumNodes, float p, int nbEvents, string name,
-                 float tStart, float tEnd) {
+                 float tStart, float tEnd, bool edge) {
   cout << "Graph parameters:\n";
   cout << "n: " << n << ", p: " << p;
   cout << ", sumNodes: " << sumNodes << '\n';
-  tempoNetwork tnet(n, sumNodes, 10, 0.5, tStart, tEnd, true);
+  tempoNetwork tnet(n, sumNodes, 10, 0.5, tStart, tEnd, edge);
   writeTempoNetwork(tnet, name);
   cout << "\nTemporal Network generated\n";
 }
@@ -109,8 +109,9 @@ void overlappingExperiment(tempoNetwork &rdTnet, int nbWalkers, int nbSteps,
 void simulation() {}
 
 int main(int argc, char *argv[]) {
-  // genTempoNet(20, 160, 0.1, 10, "test", 0., 100.);
-  tempoNetwork rdTnet = readStreamFile("test.stream");
+  // genTempoNet(20, 160, 0.1, 10, "test2", 0., 100., false);
+  tempoNetwork rdTnet = readStreamFile("test2.stream");
+
   // int i = 0;
   // for (auto event : rdTnet.getNodeEvents()) {
   //   cout << "\nPour l'event " << i << " on a: ";
@@ -128,25 +129,20 @@ int main(int argc, char *argv[]) {
   //   j += 1;
   // }
   // Génération aléatoire de stream graph:
-  // Faire un paramaètre style compacité pour les arêtes
-
-  // Puis quand on fait les arêtes, on prend deux chuncks qui se superposent, on
-  // a une proba p qu'une arête existe entre ces deux chuncks puis on regarde la
-  // taille de l'intersection des chuncks et on tire au hasard une partition de
-  // cette taille la dans l'ensemble des partitions de {1, ..., taille inter}
 
   // Zero compute overlapping proportion on the existing graph and veriy
   // everything works
   // First generate 100 graphs with characteristics as the
-  // first one Second compute avg overlapping proportion and compare with the
-  // first result Third compute the 9900 last graphs create a curve of avg
-  // ovelapping according to compacity
+  // first one Second compute avg overlapping proportion and compare with
+  // the first result Third compute the 9900 last graphs create a curve of
+  // avg ovelapping according to compacity
 
-  // Compute the avgchunk size and find 100 batchs of 10 graphs each of similar
-  // avgchunksize Compute the avg overlapping proportion in each batch and
-  // render a figure
+  // Compute the avgchunk size and find 100 batchs of 10 graphs each of
+  // similar avgchunksize Compute the avg overlapping proportion in each
+  // batch and render a figure
 
-  cout << "Avg Chunk size is " << rdTnet.avgChunkSize();
+  cout << "Avg edge Chunk size is " << rdTnet.avgEdgeChunkSize();
+  overlappingExperiment(rdTnet, 1000, 10, 0.85);
   // overlappingExperiment(rdTnet, 100, 10, 1.);
   // cout << "\nRandom walk done, now the results:\n";
   // displayResults(rdWalk, tnet.size(), tnet.getNodeEvents());
