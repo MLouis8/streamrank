@@ -12,6 +12,7 @@
 typedef vector<pair<float, float>> TimeItvs;
 typedef pair<int, int> DTNode;
 typedef unordered_map<int, vector<int>> Fneighborhood;
+typedef vector<pair<int, int>> Chunks;
 
 class tempoNetwork {
 public:
@@ -105,6 +106,8 @@ public:
   DTNode getRdTempoNode(int u, int k);
 
   float avgChunkSize();
+
+  Chunks getChunks(int node);
 
 private:
   float _tStart;

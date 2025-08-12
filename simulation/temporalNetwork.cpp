@@ -36,17 +36,25 @@ tempoNetwork::tempoNetwork(int n, int sumNodes, int nbEvents, float p,
             {_nodeEvents[i][e.first], _nodeEvents[i][e.second]});
     }
   } else {
+    vector<Chunks> nodeChunks;
+    nodeChunks.push_back(getChunks(0));
     for (int u = 0; u < _n; u++) {
       for (int v = u + 1; v < _n; v++) {
-        int uChunkStart = 0;
-        int vChunkStart = 0;
+        if (nodeChunks.size() <= v) {
+          nodeChunks.push_back(getChunks(v));
+        }
+        int uChunkStart = 0, uChunkEnd = 0;
+        int vChunkStart = 0, vChunkEnd = 0;
         while (uChunkStart < nbEvents || vChunkStart < nbEvents) {
-          int uChunkEnd = nodeVanishE(u, uChunkStart);
+          uChunkEnd = nodeVanishE(u, uChunkStart);
           while (uChunkEnd == uChunkStart) {
             uChunkStart += 1;
             uChunkEnd = nodeVanishE(u, uChunkStart);
           }
-          int vChunkEnd = nodeVanishE(v, vChunkStart);
+          while (vChunkStart <= uChunkEnd) {
+          }
+
+          vChunkEnd = nodeVanishE(v, vChunkStart);
           while (vChunkEnd == vChunkStart) {
             vChunkStart += 1;
             vChunkEnd = nodeVanishE(v, vChunkStart);
@@ -403,17 +411,28 @@ float tempoNetwork::avgChunkSize() {
   float nbChunks = 0;
   float sumChunks = 0;
   for (int node = 0; node < _n; node++) {
-    int chunckId = 0;
-    while (chunckId < nbEvents()) {
-      if (find(_nodeEvents[chunckId].begin(), _nodeEvents[chunckId].end(),
-               node) != _nodeEvents[chunckId].end()) {
-        nbChunks += 1;
-        int temp = chunckId;
-        chunckId = nodeVanishE(node, temp);
-        sumChunks += chunckId - temp + 1;
-      }
-      chunckId += 1;
+    Chunks nodeChunks = getChunks(node);
+    for (auto chunk : nodeChunks) {
+      nbChunks += 1;
+      sumChunks += chunk.second - chunk.first + 1;
     }
   }
   return sumChunks / nbChunks;
+}
+
+Chunks tempoNetwork::getChunks(int node) {
+  vector<pair<int, int>> res;
+  int start = 0;
+  while (start < _nodeEvents.size()) {
+    while (start < _nodeEvents.size() &&
+           find(_nodeEvents[start].begin(), _nodeEvents[start].end(), node) ==
+               _nodeEvents[start].end())
+      start += 1;
+    if (start >= _nodeEvents.size())
+      return res;
+    int end = nodeVanishE(node, start);
+    res.push_back({start, end});
+    start = end + 1;
+  }
+  return res;
 }

@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
   // render a figure
 
   cout << "Avg Chunk size is " << rdTnet.avgChunkSize();
-  overlappingExperiment(rdTnet, 100, 10, 1.);
+  // overlappingExperiment(rdTnet, 100, 10, 1.);
   // cout << "\nRandom walk done, now the results:\n";
   // displayResults(rdWalk, tnet.size(), tnet.getNodeEvents());
   // cout << "\nNodes present at last event: ";
