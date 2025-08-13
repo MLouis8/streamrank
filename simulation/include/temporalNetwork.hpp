@@ -4,6 +4,7 @@
 #include "event.hpp"
 #include "network.hpp"
 
+#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -45,10 +46,11 @@ public:
   int size() { return _n; }
   TimeItvs getTimeItvs(int u) { return _W[u]; }
   TimeItvs getTimeItvs(int u, int v);
-  float getEventVal(int e) { return _events[e].val(); }
+  float getEventVal(int e);
   vector<vector<int>> &getNodeEvents() { return _nodeEvents; }
   vector<vector<pair<int, int>>> &getEdgeEvents() { return _edgeEvents; }
   int nbEvents() { return _nodeEvents.size(); }
+  void setEvents(vector<Event> events) { _events = events; }
 
   /**
    * Generate the tempoNetwork attributes from an aglomerated Network and a time

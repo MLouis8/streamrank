@@ -53,7 +53,8 @@ DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
     vector<int> possibleEvents;
     vector<float> w2;
     float tk1 = tnet.getEventVal(_pos.second + 1);
-    for (int l = _pos.second + 1; l <= vEnd && l < tnet.nbEvents() - 1; l++) {
+    int l = _pos.second + 1;
+    while (l <= vEnd && l < tnet.nbEvents() - 1) {
       possibleEvents.push_back(l);
       float tl = tnet.getEventVal(l);
       float w = 0;
@@ -74,6 +75,7 @@ DTNode Walker<DTNode>::approxStep(tempoNetwork &tnet, float alpha,
       }
       w = w * h(tl - tk1);
       w2.push_back(w);
+      l++;
     }
     discrete_distribution<> dis2(w2.begin(), w2.end());
     int t = possibleEvents[dis2(eng)];
@@ -89,8 +91,6 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
   default_random_engine eng(rd());
   Fneighborhood dfnhb = tnet.directFutureNeighbors(_pos.first, _pos.second);
   Fneighborhood fnhb = tnet.futureNeighbours(_pos.first, _pos.second);
-  // cout << "\nDirect Future Neigh size is " << dfnhb.size();
-  // cout << "\nFuture Neigh size is " << fnhb.size();
   uniform_real_distribution<float> jumpDis(0, 1);
   if (jumpDis(eng) > alpha || dfnhb.size() == 0) {
     _pos = tnet.getRdTempoNode(_pos.first, _pos.second);
@@ -98,22 +98,26 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
     // choose v amongts the future neighbors of u
     vector<float> w1;
     vector<int> neighbors;
+    // cout << "\nNeighbours of " << _pos.first << ' ' << _pos.second;
     for (auto &[key, val] : fnhb) {
+      // cout << "\n" << key << ':';
+      // for (auto v : val) {
+      //   cout << ' ' << v;
+      // }
       w1.push_back(val.size());
       neighbors.push_back(key);
     }
     discrete_distribution<> dis1(w1.begin(), w1.end());
     int v = neighbors[dis1(eng)];
-    // cout << "\nNeighbour " << v << " is chosen";
     // select an event
     int uEnd = tnet.nodeVanishE(_pos.first, _pos.second);
-    int vStart = fnhb[v][0];
-    int vEnd = fnhb[v].back();
     vector<int> possibleEvents;
     vector<float> w2;
     float tk = tnet.getEventVal(_pos.second);
     float tk1 = tnet.getEventVal(_pos.second + 1);
-    for (int l = _pos.second; l <= vEnd && l < tnet.nbEvents() - 1; l++) {
+
+    for (auto l : fnhb[v]) {
+      // cout << "\nPossible event is " << l;
       possibleEvents.push_back(l);
       float tl = tnet.getEventVal(l);
       float w = 0.;
@@ -124,16 +128,15 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
           float ti1 = tnet.getEventVal(i + 1);
           float ti = tnet.getEventVal(i);
           float ti1End = tnet.getEventVal(i1End);
-          if (ti1 == ti1End)
+          if (ti1 == ti1End) {
             ti1End += 1;
-          ti1End = tnet.getEventVal(i1End + 1);
+            if (i1End + 1 >= tnet.nbEvents())
+              ti1End += 1;
+            else
+              ti1End = tnet.getEventVal(i1End + 1);
+          }
           float div = integral(ti1 - tk, ti1End - tk, h, 100);
           w += (ti1 - ti) / div;
-          // if (div <= 0.000001) {
-          //   cout << "\ndiv is " << div;
-          //   cout << "\nti1-tk " << ti1 - tk << " ti1End-tk " << ti1End - tk
-          //        << endl;
-          // }
         }
       }
       w = w * h(tl - tk1);
@@ -143,19 +146,19 @@ DTNode Walker<DTNode>::upperBound(tempoNetwork &tnet, float alpha,
       //        << v << ' ' << l << endl;
       // }
       w2.push_back(w);
+      l++;
     }
+    int t;
     if (accumulate(w2.begin(), w2.end(), 0.) > 0) {
       discrete_distribution<> dis2(w2.begin(), w2.end());
-      int t = possibleEvents[dis2(eng)];
-      _pos = {v, t};
+      t = possibleEvents[dis2(eng)];
     } else {
-      cout << "\npossible events size is " << possibleEvents.size() << " "
-           << w2.size();
-      for (int i = 0; i < w2.size(); i++) {
-        cout << ' ' << w2[i];
-      }
+      uniform_int_distribution<> dis3(0, possibleEvents.size() - 1);
+      t = possibleEvents[dis3(eng)];
     }
+    _pos = {v, t};
   }
+  // cout << "\nNext node is " << _pos.first << ' ' << _pos.second;
   return _pos;
 }
 

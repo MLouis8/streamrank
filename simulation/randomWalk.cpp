@@ -42,7 +42,7 @@ vector<vector<pair<int, int>>> randomWalkSimulation(int nbWalkers, int nbSteps,
   }
   for (int s = 0; s < nbSteps; s++) {
     for (int i = 0; i < nbWalkers; i++) {
-      if (walkersList[i].pos().second < tnet.nbEvents() - 2) {
+      if (walkersList[i].pos().second < tnet.nbEvents() - 1) {
         DTNode newLoc;
         switch (stepType) {
         case 1: // approx

@@ -105,6 +105,13 @@ tempoNetwork::tempoNetwork(float tStart, float tEnd, int n,
   _events = events;
 }
 
+float tempoNetwork::getEventVal(int e) {
+  if (e < nbEvents())
+    return _events[e].val();
+  else
+    return _tEnd + 1;
+}
+
 TimeItvs tempoNetwork::getTimeItvs(int u, int v) {
   auto it = _E.find(pairToStr({u, v}));
   if (it != _E.end()) {
@@ -233,8 +240,6 @@ vector<int> tempoNetwork::instENeighbors(int u, int e) {
   for (auto edge : _edgeEvents[e]) {
     if (edge.first == u)
       instNeighbors.push_back(edge.second);
-    if (edge.second == u)
-      instNeighbors.push_back(edge.first);
   }
   return instNeighbors;
 }
